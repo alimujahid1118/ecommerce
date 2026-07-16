@@ -183,3 +183,80 @@ export async function logout(req, res) {
 
     res.status(200).json({ message: "User logged out successfully." })
 }
+
+export async function logoutAll(req, res) {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        return res.status(400).json({ message: "Invalid Token." })
+    }
+
+    const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+    const decoded = jwt.verify(refreshToken, envConfig.JWT_SECRET);
+
+    const session = await sessionModel.updateMany({
+        user: decoded.id,
+        isRevoked: false
+    },
+        {
+            isRevoked: true
+        })
+
+    res.clearCookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+    })
+
+    res.status(200).json({ message: "User logged out successfully from all devices." })
+}
+
+export async function UpdateRefreshToken(req, res) {
+    const refreshToken = req.cookies.refreshToken
+
+    if (!refreshToken) {
+        return res.status(404).json({ message: "Invalid Refresh Token." })
+    }
+
+    const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+    const decoded = jwt.verify(refreshToken, envConfig.JWT_SECRET);
+
+    const session = await sessionModel.findOne({
+        refreshTokenHash: refreshTokenHash,
+        isRevoked: false
+    })
+
+    if (!session) {
+        return res.status(404).json({ message: "Invalid Session." })
+    }
+
+    const newRefreshToken = jwt.sign(
+        { id: decoded.id },
+        envConfig.JWT_SECRET,
+        { expiresIn: '7d' }
+    )
+
+    const newRefreshTokenHash = crypto.createHash("sha256").update(newRefreshToken).digest("hex");
+
+    session.refreshTokenHash = newRefreshTokenHash;
+    session.save();
+
+    res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+    })
+
+    const accessToken = jwt.sign(
+        { id: decoded.id },
+        envConfig.JWT_SECRET,
+        { expiresIn: '10m' }
+    )
+
+    res.status(200).json({
+        message: "Update Refresh token Successful.",
+        accessToken
+    })
+}
