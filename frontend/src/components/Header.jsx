@@ -72,6 +72,7 @@ export default function Header({ menuOpen, setMenuOpen, profileOpen, setProfileO
 
     const handleLogout = async () => {
         try {
+            console.log("Logout clicked");
             const response = await api.post("/auth/logout");
             localStorage.removeItem("accessToken")
             setIsAuthenticated(false)
@@ -226,7 +227,7 @@ export default function Header({ menuOpen, setMenuOpen, profileOpen, setProfileO
                                                 <p className="bg-slate-200 w-full py-[1px]"></p>
                                                 <div className="flex flex-row gap-2 items-start">
                                                     <i className="fi fi-rr-leave mt-[2px]"></i>
-                                                    <button onClick={handleLogout}>Logout</button>
+                                                    <button type="button" onClick={handleLogout}>Logout</button>
                                                 </div>
                                             </div>
                                             
