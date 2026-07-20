@@ -21,14 +21,14 @@ export async function register(req, res) {
 
     if (!passwordRegex.test(password)) {
         return res.status(400).json({
-            message: [
-                'Password should have at least 8 characters.',
-                'Password should have at least one lowercase letter',
-                'Password should have at least one uppercase letter',
-                'Password should have at least one number',
-                'Password should have at least one special character',
-                'No spaces or other whitespace characters (spaces, tabs, newlines)',
-            ]
+            message:
+                `Password should have at least 8 characters.
+                Password should have at least one lowercase letter.
+                Password should have at least one uppercase letter.
+                Password should have at least one number.
+                Password should have at least one special character.
+                No spaces or other whitespace characters (spaces, tabs, newlines).`
+
         })
     }
 
