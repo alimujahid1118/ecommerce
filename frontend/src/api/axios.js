@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: 'https://ecommerce-czkl.onrender.com/api',
+    baseURL:
+        'https://ecommerce-czkl.onrender.com/api',
     withCredentials: true
 })
 
