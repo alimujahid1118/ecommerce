@@ -6,7 +6,7 @@ dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
-    port: 587,
+    port: 465,
     secure: false,
     logger: true,
     debug: true,
