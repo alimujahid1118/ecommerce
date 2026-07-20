@@ -2,7 +2,9 @@ import envConfig from "../config/config.js";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
         type: "OAuth2",
         user: envConfig.GOOGLE_USER,
@@ -11,7 +13,6 @@ const transporter = nodemailer.createTransport({
         refreshToken: envConfig.GOOGLE_REFRESH_TOKEN,
     },
 });
-
 transporter.verify((error, success) => {
     if (error) {
         console.log(error);
