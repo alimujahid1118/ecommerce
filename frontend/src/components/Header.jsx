@@ -72,7 +72,6 @@ export default function Header({ menuOpen, setMenuOpen, profileOpen, setProfileO
 
     const handleLogout = async () => {
         try {
-            console.log("Logout clicked");
             const response = await api.post("/auth/logout");
             localStorage.removeItem("accessToken")
             setIsAuthenticated(false)
