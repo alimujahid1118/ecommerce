@@ -1,10 +1,15 @@
 import envConfig from "../config/config.js";
 import nodemailer from "nodemailer";
+import dns from "node:dns";
+
+dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: "gmail",
     port: 587,
     secure: false,
+    logger: true,
+    debug: true,
     auth: {
         type: "OAuth2",
         user: envConfig.GOOGLE_USER,
