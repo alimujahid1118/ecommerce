@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import Footer from "../components/Footer";
-import Header from "../components/Header";
 import { useState } from "react";
 import api from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
-export default function Register({ menuOpen, setMenuOpen, profileOpen, setProfileOpen }) {
+export default function Register({ setProfileOpen, setIsAuthenticated, setUserData }) {
 
     const [formData, setFormData] = useState({
         'firstName' : '',
@@ -13,8 +12,8 @@ export default function Register({ menuOpen, setMenuOpen, profileOpen, setProfil
         'email' : '',
         'password' : ''
     });
-    const [successMessage, setSuccessMessage] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -28,23 +27,19 @@ export default function Register({ menuOpen, setMenuOpen, profileOpen, setProfil
         e.preventDefault();
         try {
             const response = await api.post("/auth/register", formData);
-            console.log(response.data)
-            setSuccessMessage(response.data.message);
-            setErrorMessage("")
+            localStorage.setItem("accessToken", response.data.accessToken);
+            const user = response.data.user
+            setUserData(user)
+            setIsAuthenticated(true)
+            navigate("/dashboard")
+
         } catch (err) {
-            console.log(err)
             setErrorMessage(err.response.data.message);
-            setSuccessMessage("")
         }
     }
 
     return (
         <>
-            <Header 
-
-                menuOpen={menuOpen} setMenuOpen={setMenuOpen} profileOpen={profileOpen} setProfileOpen={setProfileOpen} 
-                
-                />
             <div className="flex flex-col px-10 py-10">
                 <div className="text-[#132A36] flex flex-row gap-2">
                     <Link to='/' className="hover:text-[#132A36]/60">Home</Link> &gt; <p>Create Account</p>
@@ -82,16 +77,11 @@ export default function Register({ menuOpen, setMenuOpen, profileOpen, setProfil
                 {/* Response Messages */}
                 <div className="flex flex-col items-center pb-4">
                     {
-                        [successMessage && (
-                                <div className="text-white font-semibold bg-green-600 flex flex-col gap-2 text-center w-full md:max-w-[500px] py-2 border-[1px] rounded-lg">
-                                    {successMessage}
-                                </div>
-                        ),
                         errorMessage && (
                             <div className="text-white whitespace-pre-line text-start font-semibold bg-red-600 flex flex-col gap-2 px-4 w-full md:max-w-[500px] py-2 border-[1px] rounded-lg">
                                 {errorMessage}
                             </div>
-                        )]
+                        )
                     }
                 </div>
 
@@ -106,7 +96,6 @@ export default function Register({ menuOpen, setMenuOpen, profileOpen, setProfil
                 </div>
                 
             </div>
-            <Footer />
         </>
     )
 }

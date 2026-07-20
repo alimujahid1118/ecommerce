@@ -25,7 +25,7 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const refreshResponse = await axios.get("/auth/update-refresh-token");
+                const refreshResponse = await api.get("/auth/update-refresh-token");
                 const newAccessToken = refreshResponse.data.accessToken
                 localStorage.setItem("accessToken", newAccessToken)
 

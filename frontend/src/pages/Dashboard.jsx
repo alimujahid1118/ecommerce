@@ -1,0 +1,120 @@
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import api from "../api/axios";
+
+export default function Dashboard ({ isAuthenticated, setIsAuthenticated, isAuthChecked, userData }) {
+
+    const navigate = useNavigate();
+
+    if (!isAuthChecked) {
+        return (
+            <div className="min-h-screen flex items-center justify-center px-6 py-20">
+                <p className="text-lg font-semibold text-[#132A36]">Checking authentication...</p>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to='/' replace />;
+    }
+
+    const handleLogout = async () => {
+        try {
+            const response = await api.post("/auth/logout");
+            localStorage.removeItem("accessToken");
+            setIsAuthenticated(false)
+            navigate("/");
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    return (
+        <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 my-5 py-4 bg-slate-100 min-h-screen">
+            <aside className="flex flex-col gap-2 text-[#104185] md:gap-4 m-6 md:m-10 md:w-1/4 h-min border-[1px] border-slate-300 rounded-lg bg-white">
+                <div className="px-6 pt-2">
+                    Dashboard
+                </div>
+                <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                <div className="px-6">
+                    My Orders
+                </div>
+                <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                <div className="px-6">
+                    Edit Profile
+                </div>
+                <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                <div className="px-6">
+                    Saved Payment Methods
+                </div>
+                <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                <div className="px-6">
+                    Change Password
+                </div>
+                <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                <div className="flex flex-row gap-2 px-2 py-2 mb-2 mx-2 justify-center bg-[#132A36] text-white font-semibold rounded-md">
+                    <i className="fi fi-rr-power mt-[3px]"></i>
+                    <button onClick={handleLogout}> LOG OUT</button>
+                </div>
+            </aside>
+            <main className="flex flex-col md:w-3/4 px-6">
+                <div className="flex flex-col gap-3">
+                    <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">Dashboard</h1>
+                    <p className="text-sm md:hidden text-[#104185] px-2">Welcome back {userData.firstName} Here is an overview of your account.</p>
+                    <Link className="md:hidden flex flex-row gap-2 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
+                        <i className="fi fi-rr-cart-shopping-fast mt-[3px]"></i>
+                        <p className="font-semibold">Continue Shopping</p>
+                    </Link>
+                    <div className="hidden md:flex md:flex-row md:items-center md:justify-between md:px-2">
+                        <p className="text-sm text-[#104185] px-2">Welcome back {userData.firstName} Here is an overview of your account.</p>
+                        <Link className="flex flex-row gap-2 px-6 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
+                            <i className="fi fi-rr-cart-shopping-fast mt-[3px]"></i>
+                            <p className="font-semibold">Continue Shopping</p>
+                        </Link>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-4 py-4">
+                    <div className="flex flex-row gap-4 bg-white px-6 py-6 items-center rounded-md shadow-md">
+                        <div className="text-[#104185] text-4xl mt-2">
+                            <i className="fi fi-rr-grocery-basket"></i>
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-md font-semibold">TOTAL ORDERS</p>
+                            <p className="text-lg ml-1 font-semibold">1</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-row gap-4 bg-white px-6 py-6 items-center rounded-md shadow-md">
+                        <div className="text-[#104185] text-4xl mt-2">
+                            <i class="fi fi-rr-piggy-bank"></i>
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-md font-semibold">LIFETIME SPEND</p>
+                            <p className="text-lg ml-1 font-semibold">$4.99</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-row gap-4 bg-white px-6 py-6 items-center rounded-md shadow-md">
+                        <div className="text-[#104185] text-4xl mt-2">
+                            <i class="fi fi-rr-hr-person"></i>
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-md font-semibold">MEMBER SINCE</p>
+                            <p className="text-lg ml-1 font-semibold">{new Date(userData.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            })}</p>
+                        </div>
+                    </div>
+                </div>
+                <div>
+
+                </div>
+                <div>
+
+                </div>
+                <div>
+
+                </div>
+            </main>
+        </div>
+    );
+}

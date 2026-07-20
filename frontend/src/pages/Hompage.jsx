@@ -7,16 +7,10 @@ import smartwatch from "../assets/smartwatch.png";
 import discountBanner from "../assets/discount-banner.png";
 import Footer from "../components/Footer";
 
-export default function Homepage({ menuOpen, setMenuOpen, profileOpen, setProfileOpen }) {
+export default function Homepage() {
 
     return (
-        <>            
-            <Header 
-            
-                menuOpen={menuOpen} setMenuOpen={setMenuOpen} profileOpen={profileOpen} setProfileOpen={setProfileOpen} 
-            
-            />
-
+        <>
             {/* Search Bar - Mobile */}
             <div className="flex flex-row items-center justify-center mt-2 md:hidden">
                 <input className="text-lg border-[1px] border-[#90acd3] py-2 pl-2 rounded-l-md" type="text" placeholder="Search for products.." />
@@ -146,7 +140,6 @@ export default function Homepage({ menuOpen, setMenuOpen, profileOpen, setProfil
                     </div>
                 </div>
             </div>
-            <Footer />
         </>
     )
 }

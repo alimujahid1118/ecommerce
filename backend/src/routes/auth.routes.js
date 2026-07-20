@@ -18,4 +18,9 @@ authRouter.post('/auth/logout-all-devices', authController.logoutAll);
 // GET /api/auth/update-refresh-token
 authRouter.get('/auth/update-refresh-token', authController.UpdateRefreshToken);
 
+// GET /api/get-dashboard
+//Protected Route
+
+authRouter.get('/auth/get-me', authController.getMe)
+
 export default authRouter;

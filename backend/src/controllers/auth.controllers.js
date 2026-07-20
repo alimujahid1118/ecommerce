@@ -92,7 +92,8 @@ export async function register(req, res) {
             firstName: newUser.firstName,
             lastName: newUser.lastName,
             username: newUser.username,
-            email: newUser.email
+            email: newUser.email,
+            createdAt: newUser.createdAt
         },
         accessToken
     })
@@ -149,7 +150,8 @@ export async function login(req, res) {
             firstName: user.firstName,
             lastName: user.lastName,
             username: user.username,
-            email: user.email
+            email: user.email,
+            createdAt: user.createdAt
         },
         accessToken
     })
@@ -174,7 +176,7 @@ export async function logout(req, res) {
             isRevoked: true
         })
 
-    res.clearCookie("refreshToken", refreshToken, {
+    res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
@@ -202,7 +204,7 @@ export async function logoutAll(req, res) {
             isRevoked: true
         })
 
-    res.clearCookie("refreshToken", refreshToken, {
+    res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
@@ -259,4 +261,43 @@ export async function UpdateRefreshToken(req, res) {
         message: "Update Refresh token Successful.",
         accessToken
     })
+}
+
+export async function getMe(req, res) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({
+            message: "Access token missing."
+        });
+    }
+
+    const accessToken = authHeader.split(" ")[1];
+
+    if (!accessToken) {
+        return res.status(404).json({ message: "Invalid Access Token." })
+    }
+
+    if (accessToken) {
+        try {
+            const decoded = jwt.verify(accessToken, envConfig.JWT_SECRET);
+            const user = await userModel.findById(decoded.id);
+
+            res.status(200).json({
+                user: {
+                    username: user.username,
+                    email: user.email
+                }
+            })
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: "Access Token Expired."
+                })
+            }
+            return res.status(401).json({
+                message: "Invalid Access Token."
+            })
+        }
+    }
 }
