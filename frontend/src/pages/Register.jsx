@@ -27,11 +27,13 @@ export default function Register({ setProfileOpen, setIsAuthenticated, setUserDa
         e.preventDefault();
         try {
             const response = await api.post("/auth/register", formData);
-            localStorage.setItem("accessToken", response.data.accessToken);
             const user = response.data.user
             setUserData(user)
-            setIsAuthenticated(true)
-            navigate("/dashboard")
+            navigate("/verify-email", {
+                state : {
+                    email : response.data.user.email
+                }
+            })
 
         } catch (err) {
             setErrorMessage(err.response.data.message);
@@ -70,7 +72,7 @@ export default function Register({ setProfileOpen, setIsAuthenticated, setUserDa
                             <p className="font-semibold">Password</p>
                             <input name="password" value={formData.password} onChange={handleChange} type="password" placeholder="********" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg"/>
                         </div>
-                        <button type="submit" className="bg-[#132A36] text-white font-semibold mt-5 py-2 rounded-lg">Register</button>
+                        <button type="submit" className="bg-[#132A36] text-white font-semibold mt-5 py-2 rounded-lg">Next</button>
                     </form>
                 </div>
 

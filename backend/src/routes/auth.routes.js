@@ -23,4 +23,8 @@ authRouter.get('/auth/update-refresh-token', authController.UpdateRefreshToken);
 
 authRouter.get('/auth/get-me', authController.getMe)
 
+// GET /api/verify-email
+
+authRouter.post('/auth/verify-email', authController.verifyEmail)
+
 export default authRouter;

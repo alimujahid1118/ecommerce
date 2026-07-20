@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(cors({
-    origin: ['https://ecommerce-ten-zeta-91.vercel.app'],
+    origin: ['https://ecommerce-ten-zeta-91.vercel.app', 'http://localhost:5173'],
     credentials: true
 }));
 

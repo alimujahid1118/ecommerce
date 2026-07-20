@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import api from "./api/axios";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
 
@@ -72,6 +73,12 @@ function App() {
           isAuthenticated={isAuthenticated}
           isAuthChecked={isAuthChecked}
           setIsAuthenticated={setIsAuthenticated}
+          userData={userData}
+          
+          />} />
+
+        <Route path="/verify-email" element={<VerifyEmail
+
           userData={userData}
           
           />} />
