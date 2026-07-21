@@ -72,18 +72,6 @@ export async function register(req, res) {
         otpHash: otpHash
     })
 
-    res.status(201).json({
-        message: "User registered successfully.",
-        user: {
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-            username: newUser.username,
-            email: newUser.email,
-            createdAt: newUser.createdAt,
-            verified: newUser.verified
-        }
-    })
-
     try {
         await sendEmail(
             newUser.email,
@@ -96,6 +84,18 @@ export async function register(req, res) {
     } catch (error) {
         console.error("Email error:", error);
     }
+
+    res.status(201).json({
+        message: "User registered successfully.",
+        user: {
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            username: newUser.username,
+            email: newUser.email,
+            createdAt: newUser.createdAt,
+            verified: newUser.verified
+        }
+    })
 }
 
 export async function login(req, res) {
