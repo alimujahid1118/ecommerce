@@ -1,40 +1,36 @@
+import { BrevoClient } from "@getbrevo/brevo";
 import envConfig from "../config/config.js";
-import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-
-    logger: true,
-    debug: true,
-
-    auth: {
-        user: envConfig.BREVO_LOGIN,
-        pass: envConfig.BREVO_SMTP_KEY,
-    },
-});
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.log(error);
-    } else {
-        console.log("SMTP Ready");
-    }
+const client = new BrevoClient({
+    apiKey: envConfig.BREVO_API_KEY,
 });
 
 async function sendEmail(to, subject, text, html) {
-    const info = await transporter.sendMail({
-        from: `E Shop <${envConfig.BREVO_LOGIN}>`,
-        to,
-        subject,
-        text,
-        html,
-    });
+    try {
+        const response = await client.transactionalEmails.sendTransacEmail({
+            sender: {
+                name: "E Shop",
+                email: envConfig.BREVO_LOGIN, // verified sender
+            },
 
-    console.log("Email sent:", info.messageId);
+            to: [
+                {
+                    email: to,
+                },
+            ],
 
-    return info;
+            subject,
+            htmlContent: html,
+            textContent: text,
+        });
+
+        console.log(response);
+
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
 export default sendEmail;

@@ -39,7 +39,8 @@ const envConfig = {
     GOOGLE_USER: process.env.GOOGLE_USER,
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
     BREVO_LOGIN: process.env.BREVO_LOGIN,
-    BREVO_SMTP_KEY: process.env.BREVO_SMTP_KEY
+    BREVO_SMTP_KEY: process.env.BREVO_SMTP_KEY,
+    BREVO_API_KEY: process.env.BREVO_API_KEY
 }
 
 export default envConfig;
