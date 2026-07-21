@@ -1,11 +1,11 @@
-import { useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 
 export default function Category () {
 
-    const { setIsAuthenticated, categoryData, setCategoryData, category, setCategory } = useAppContext();
+    const { isAuthenticated, setIsAuthenticated, categoryData, setCategoryData, category, setCategory, isAuthChecked } = useAppContext();
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -26,18 +26,17 @@ export default function Category () {
         }
     };
 
-    useEffect(()=> {
-        const getCategory = async () => {
-            try {
-                const response = await api.get("/auth/get-category");
-                setCategory(response.data)
-            } catch (error) {
-                console.log(error)
-            }
-        }
+    if (!isAuthChecked) {
+    return (
+        <div className="min-h-screen flex items-center justify-center px-6 py-20">
+            <p className="text-lg font-semibold text-[#132A36]">Checking authentication...</p>
+        </div>
+    );
+    }
 
-        getCategory()
-    }, [])
+    if (!isAuthenticated) {
+        return <Navigate to='/' replace />;
+    }
 
     return (
         <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 py-4 bg-slate-100 min-h-screen">
@@ -51,7 +50,7 @@ export default function Category () {
                 <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
                     {
                         category.map((eachCategory) => (
-                            <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
+                            <div key={eachCategory._id} className="bg-white border rounded-lg py-4 px-8 space-y-3">
                                 <div>
                                     <p className="text-xs text-slate-500">Name</p>
                                     <p className="font-medium">{eachCategory.name}</p>
@@ -94,7 +93,7 @@ export default function Category () {
                         <tbody>
                             {
                                 category.map((eachCategory) => (
-                                    <tr className="border-t">
+                                    <tr key={eachCategory._id} className="border-t">
                                         <td className="p-4">{eachCategory.name}</td>
 
                                         <td className="p-4">

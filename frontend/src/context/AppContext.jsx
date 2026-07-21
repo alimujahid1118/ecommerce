@@ -47,6 +47,19 @@ export function AppProvider({ children }) {
         getMe();
     }, []);
 
+    useEffect(()=> {
+            const getCategory = async () => {
+                try {
+                    const response = await api.get("/auth/get-category");
+                    setCategory(response.data)
+                } catch (error) {
+                    console.log(error)
+                }
+            }
+    
+            getCategory()
+        }, [])
+
     return (
         <AppContext.Provider
             value={{

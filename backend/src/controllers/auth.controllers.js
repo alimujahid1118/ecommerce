@@ -307,7 +307,7 @@ export async function getMe(req, res) {
     const accessToken = req.cookies.accessToken
 
     if (!accessToken) {
-        return res.status(404).json({ message: "Invalid Access Token." })
+        return res.status(401).json({ message: "Invalid Access Token." })
     }
 
     if (accessToken) {
@@ -368,7 +368,7 @@ export async function createCategory(req, res) {
     const accessToken = req.cookies.accessToken
 
     if (!accessToken) {
-        return res.status(400).json({ message: "Invalid Access Token." })
+        return res.status(401).json({ message: "Invalid Access Token." })
     }
 
     if (accessToken) {
@@ -407,7 +407,7 @@ export async function getCategory(req, res) {
     const accessToken = req.cookies.accessToken;
 
     if (!accessToken) {
-        return res.status(400).json({
+        return res.status(401).json({
             message: 'Invalid access token'
         })
     }

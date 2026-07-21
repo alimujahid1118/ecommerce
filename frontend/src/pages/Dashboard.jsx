@@ -51,7 +51,7 @@ export default function Dashboard () {
                     </div>
                     <div className="flex flex-row gap-4 bg-white px-6 py-6 items-center rounded-md shadow-md">
                         <div className="text-[#104185] text-4xl mt-2">
-                            <i class="fi fi-rr-piggy-bank"></i>
+                            <i className="fi fi-rr-piggy-bank"></i>
                         </div>
                         <div className="flex flex-col">
                             <p className="text-md font-semibold">LIFETIME SPEND</p>
@@ -60,7 +60,7 @@ export default function Dashboard () {
                     </div>
                     <div className="flex flex-row gap-4 bg-white px-6 py-6 items-center rounded-md shadow-md">
                         <div className="text-[#104185] text-4xl mt-2">
-                            <i class="fi fi-rr-hr-person"></i>
+                            <i className="fi fi-rr-hr-person"></i>
                         </div>
                         <div className="flex flex-col">
                             <p className="text-md font-semibold">MEMBER SINCE</p>

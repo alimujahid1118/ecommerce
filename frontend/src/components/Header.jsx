@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
 
 export default function Header() {
 
-    const { menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData, isAuthChecked } = useAppContext();
+    const { menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData, category } = useAppContext();
     const [ formData, setFormData ] = useState({
         'email' : '',
         'password' : ''
@@ -141,21 +141,13 @@ export default function Header() {
                     </div>
                     <i onClick={() => setMenuOpen(false)} className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"></i>
                     <div className="flex flex-col px-10 gap-4 text-lg font-semibold">
-                        <div className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
-                            <p>Cameras</p>
-                        </div>
-                        <div className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
-                            <p>Keyboard</p>
-                        </div>
-                        <div className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
-                            <p>Headphones</p>
-                        </div>
-                        <div className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
-                            <p>Phone</p>
-                        </div>
-                        <div className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
-                            <p>Smart Watches</p>
-                        </div>
+                        {
+                            category?.map((eachCategory)=> (
+                                <div key={eachCategory._id} className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
+                                    <p>{eachCategory.name}</p>
+                                </div>
+                            ))
+                        }
                     </div>
                 </div>
             )}

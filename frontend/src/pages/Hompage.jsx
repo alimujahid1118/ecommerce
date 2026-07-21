@@ -1,11 +1,10 @@
-import camera from "../assets/camera.png";
 import keyboard from "../assets/keyboard.png";
-import headphone from "../assets/headphone.png";
-import phone from "../assets/phone.png";
-import smartwatch from "../assets/smartwatch.png";
 import discountBanner from "../assets/discount-banner.png";
+import { useAppContext } from "../context/AppContext";
 
 export default function Homepage() {
+
+    const { category } = useAppContext();
 
     return (
         <>
@@ -18,47 +17,15 @@ export default function Homepage() {
             {/* Categories */}
             
             <div className="overflow-x-auto scrollbar-hide">
-                <div className="py-6 flex flex-row min-w-max justify-center gap-4 px-3">
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={camera} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Cameras</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={keyboard} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Keyboard</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={headphone} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Headphones</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={phone} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Phone</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={smartwatch} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Smart Watches</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={camera} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Cameras</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={keyboard} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Keyboard</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={headphone} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Headphones</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={phone} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Phone</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                        <img src={smartwatch} alt="" className="w-24 md:w-32 rounded-lg"/>
-                        <p className="text-xs font-semibold">Smart Watches</p>
-                    </div>
+                <div className="py-6 flex flex-row min-w-max justify-center gap-6 px-3">
+                    {
+                        category?.map((eachCategory) => (
+                            <div key={eachCategory._id} className="flex flex-col items-center gap-1">
+                                <img src={eachCategory.imageUrl} alt="" className="border-[1px] border-slate-300 w-24 h-20 md:w-32 md:h-24 object-cover rounded-lg"/>
+                                <p className="text-xs font-semibold">{eachCategory.name}</p>
+                            </div>
+                        ))
+                    }
                 </div>
             </div>
 
