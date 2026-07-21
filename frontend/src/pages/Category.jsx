@@ -1,8 +1,10 @@
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
+import { useAppContext } from "../context/AppContext";
 
-export default function Category ({ setIsAuthenticated, categoryData, setCategoryData }) {
+export default function Category () {
 
+    const { setIsAuthenticated, categoryData, setCategoryData } = useAppContext();
     const handleSubmit = async (e) => {
         e.preventDefault();
 

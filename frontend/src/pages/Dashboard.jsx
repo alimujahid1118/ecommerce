@@ -1,8 +1,10 @@
 import { Link, Navigate } from "react-router-dom";
 import DashboardAside from "../components/DashboardAside";
+import { useAppContext } from "../context/AppContext";
 
-export default function Dashboard ({ isAuthenticated, setIsAuthenticated, isAuthChecked, userData }) {
+export default function Dashboard () {
 
+    const { isAuthenticated, setIsAuthenticated, isAuthChecked, userData } = useAppContext();
     if (!isAuthChecked) {
         return (
             <div className="min-h-screen flex items-center justify-center px-6 py-20">

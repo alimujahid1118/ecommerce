@@ -1,8 +1,10 @@
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
+import { useAppContext } from "../context/AppContext";
 
-export default function DashboardAside({ setIsAuthenticated }) {
+export default function DashboardAside() {
 
+    const {setIsAuthenticated} = useAppContext();
     const navigate = useNavigate();
     const handleLogout = async () => {
         try {

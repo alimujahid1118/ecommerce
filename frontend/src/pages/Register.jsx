@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 
-export default function Register({ setProfileOpen, setIsAuthenticated, setUserData }) {
+export default function Register() {
 
+    const { setProfileOpen, setUserData } = useAppContext();
     const [formData, setFormData] = useState({
         'firstName' : '',
         'lastName' : '',

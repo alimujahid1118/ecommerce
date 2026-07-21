@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { useAppContext } from "../context/AppContext";
 
-export default function Header({ menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData }) {
+export default function Header() {
 
+    const { menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData } = useAppContext();
     const [ formData, setFormData ] = useState({
         'email' : '',
         'password' : ''
