@@ -81,13 +81,6 @@ export default function Header() {
             console.log(err)
         }
     }
-    if (!isAuthChecked) {
-        return (
-            <div className="min-h-screen flex items-center justify-center px-6 py-20">
-                <p className="text-lg font-semibold text-[#132A36]">Checking authentication...</p>
-            </div>
-        );
-    }
 
     return(
         <>
