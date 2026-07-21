@@ -75,7 +75,7 @@ export async function register(req, res) {
     try {
         await sendEmail(
             newUser.email,
-            "OTP Verification",
+            "Verify Your Email Address - E Shop",
             `Your OTP Code is ${otp}`,
             html
         );
