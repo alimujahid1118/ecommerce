@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
     debug: true,
 
     auth: {
-        user: process.env.BREVO_LOGIN,
-        pass: process.env.BREVO_SMTP_KEY,
+        user: envConfig.BREVO_LOGIN,
+        pass: envConfig.BREVO_SMTP_KEY,
     },
 });
 
