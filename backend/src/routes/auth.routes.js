@@ -32,4 +32,6 @@ authRouter.post('/auth/verify-email', authController.verifyEmail)
 
 authRouter.post('/auth/create-category', upload.single("image"), authController.createCategory)
 
+authRouter.get('/auth/get-category', authController.getCategory)
+
 export default authRouter;

@@ -10,6 +10,7 @@ export function AppProvider({ children }) {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAuthChecked, setIsAuthChecked] = useState(false);
+    const [category, setCategory] = useState([])
 
     const [userData, setUserData] = useState({
         firstName: "",
@@ -63,6 +64,9 @@ export function AppProvider({ children }) {
 
                 categoryData,
                 setCategoryData,
+
+                category,
+                setCategory
             }}
         >
             {children}

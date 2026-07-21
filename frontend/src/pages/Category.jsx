@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 
 export default function Category () {
 
-    const { setIsAuthenticated, categoryData, setCategoryData } = useAppContext();
+    const { setIsAuthenticated, categoryData, setCategoryData, category, setCategory } = useAppContext();
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -19,10 +20,24 @@ export default function Category () {
                 name: '',
                 image: null
             })
+            setCategory((prev) => [...prev, response.data])
         } catch (error) {
             console.log(error)
         }
     };
+
+    useEffect(()=> {
+        const getCategory = async () => {
+            try {
+                const response = await api.get("/auth/get-category");
+                setCategory(response.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        getCategory()
+    }, [])
 
     return (
         <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 py-4 bg-slate-100 min-h-screen">
@@ -34,54 +49,34 @@ export default function Category () {
                 </div>
                 {/* Mobile */}
                 <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
-                    <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
-                        <div>
-                            <p className="text-xs text-slate-500">Name</p>
-                            <p className="font-medium">Camera</p>
-                        </div>
+                    {
+                        category.map((eachCategory) => (
+                            <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
+                                <div>
+                                    <p className="text-xs text-slate-500">Name</p>
+                                    <p className="font-medium">{eachCategory.name}</p>
+                                </div>
 
-                        <div>
-                            <p className="text-xs text-slate-500">Image</p>
-                            <img
-                                src="/web-logo.png"
-                                className="w-20 h-20 object-cover rounded"
-                            />
-                        </div>
+                                <div className="flex flex-col gap-2">
+                                    <p className="text-xs text-slate-500">Image</p>
+                                    <img
+                                        src={eachCategory.imageUrl}
+                                        className="w-20 h-20 object-cover rounded"
+                                    />
+                                </div>
 
-                        <div className="flex gap-3">
-                            <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
-                                Update
-                            </button>
+                                <div className="flex gap-3">
+                                    <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                        Update
+                                    </button>
 
-                            <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                    <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
-                        <div>
-                            <p className="text-xs text-slate-500">Name</p>
-                            <p className="font-medium">Camera</p>
-                        </div>
-
-                        <div>
-                            <p className="text-xs text-slate-500">Image</p>
-                            <img
-                                src="/web-logo.png"
-                                className="w-20 h-20 object-cover rounded"
-                            />
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
-                                Update
-                            </button>
-
-                            <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
-                                Delete
-                            </button>
-                        </div>
-                    </div>
+                                    <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    }
                 </div>
 
                 {/* Desktop */}
@@ -97,28 +92,33 @@ export default function Category () {
                         </thead>
 
                         <tbody>
-                            <tr className="border-t">
-                                <td className="p-4">Camera</td>
+                            {
+                                category.map((eachCategory) => (
+                                    <tr className="border-t">
+                                        <td className="p-4">{eachCategory.name}</td>
 
-                                <td className="p-4">
-                                    <img
-                                        src="/web-logo.png"
-                                        className="w-16 h-16 rounded object-cover"
-                                    />
-                                </td>
+                                        <td className="p-4">
+                                            <img
+                                                src={eachCategory.imageUrl}
+                                                className="w-16 h-16 rounded object-cover"
+                                            />
+                                        </td>
 
-                                <td className="text-center">
-                                    <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
-                                        Update
-                                    </button>
-                                </td>
+                                        <td className="text-center">
+                                            <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                                Update
+                                            </button>
+                                        </td>
 
-                                <td className="text-center">
-                                    <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
+                                        <td className="text-center">
+                                            <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                            
 
                             <tr className="border-t">
                                 <td className="p-4">Laptop</td>

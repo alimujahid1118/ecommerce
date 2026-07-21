@@ -368,7 +368,7 @@ export async function createCategory(req, res) {
     const accessToken = req.cookies.accessToken
 
     if (!accessToken) {
-        return res.status(404).json({ message: "Invalid Access Token." })
+        return res.status(400).json({ message: "Invalid Access Token." })
     }
 
     if (accessToken) {
@@ -380,13 +380,13 @@ export async function createCategory(req, res) {
 
             const result = await cloudinary.uploader.upload(base64, { folder: 'categories' })
 
-            const response = await categoryModel.create({
+            const category = await categoryModel.create({
                 name: name,
                 imageUrl: result.secure_url,
                 imagePublicId: result.public_id
             })
 
-            return res.status(201).json({ message: response })
+            return res.status(201).json(category)
         } catch (error) {
             if (error.name === "TokenExpiredError") {
                 return res.status(401).json(
@@ -401,4 +401,31 @@ export async function createCategory(req, res) {
     }
 
 
+}
+
+export async function getCategory(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(400).json({
+            message: 'Invalid access token'
+        })
+    }
+
+    if (accessToken) {
+        try {
+            const category = await categoryModel.find()
+            return res.status(200).json(category)
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: 'Invalid Access Token'
+                })
+            } else {
+                return res.status(401).json({
+                    message: 'Invalid Token'
+                })
+            }
+        }
+    }
 }
