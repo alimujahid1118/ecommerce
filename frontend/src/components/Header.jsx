@@ -89,10 +89,6 @@ export default function Header() {
         );
     }
 
-    if (!isAuthenticated) {
-        return <Navigate to='/' replace />;
-    }
-
     return(
         <>
             <div className="flex flex-row w-full bg-[#132A36] px-6 py-1 md:py-3 text-white justify-between">
