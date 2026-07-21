@@ -7,6 +7,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import api from "./api/axios";
 import VerifyEmail from "./pages/VerifyEmail";
+import Category from "./pages/Category";
 
 function App() {
 
@@ -20,6 +21,10 @@ function App() {
         'username' : '',
         'email': ''
     })
+  const [categoryData, setCategoryData] = useState({
+    'name' : '',
+    'image' : null
+  })
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -81,6 +86,13 @@ function App() {
 
           userData={userData}
           
+          />} />
+
+        <Route path="/dashboard/category" element={<Category 
+          setIsAuthenticated={setIsAuthenticated}
+          setCategoryData={setCategoryData}
+          categoryData={categoryData}
+
           />} />
         
       </Routes>

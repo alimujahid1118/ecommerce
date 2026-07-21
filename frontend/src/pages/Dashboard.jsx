@@ -1,9 +1,7 @@
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import { Link, Navigate } from "react-router-dom";
+import DashboardAside from "../components/DashboardAside";
 
 export default function Dashboard ({ isAuthenticated, setIsAuthenticated, isAuthChecked, userData }) {
-
-    const navigate = useNavigate();
 
     if (!isAuthChecked) {
         return (
@@ -17,45 +15,12 @@ export default function Dashboard ({ isAuthenticated, setIsAuthenticated, isAuth
         return <Navigate to='/' replace />;
     }
 
-    const handleLogout = async () => {
-        try {
-            const response = await api.post("/auth/logout");
-            localStorage.removeItem("accessToken");
-            setIsAuthenticated(false)
-            navigate("/");
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
     return (
         <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 my-5 py-4 bg-slate-100 min-h-screen">
-            <aside className="flex flex-col gap-2 text-[#104185] md:gap-4 m-6 md:m-10 md:w-1/4 h-min border-[1px] border-slate-300 rounded-lg bg-white">
-                <div className="px-6 pt-2">
-                    Dashboard
-                </div>
-                <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                <div className="px-6">
-                    My Orders
-                </div>
-                <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                <div className="px-6">
-                    Edit Profile
-                </div>
-                <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                <div className="px-6">
-                    Saved Payment Methods
-                </div>
-                <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                <div className="px-6">
-                    Change Password
-                </div>
-                <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                <div className="flex flex-row gap-2 px-2 py-2 mb-2 mx-2 justify-center bg-[#132A36] text-white font-semibold rounded-md">
-                    <i className="fi fi-rr-power mt-[3px]"></i>
-                    <button onClick={handleLogout}> LOG OUT</button>
-                </div>
-            </aside>
+            <DashboardAside 
+                setIsAuthenticated={setIsAuthenticated} 
+                
+            />
             <main className="flex flex-col md:w-3/4 px-6">
                 <div className="flex flex-col gap-3">
                     <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">Dashboard</h1>

@@ -1,5 +1,5 @@
 import { BrevoClient } from "@getbrevo/brevo";
-import envConfig from "../config/config.js";
+import { envConfig } from "../config/config.js";
 
 const client = new BrevoClient({
     apiKey: envConfig.BREVO_API_KEY,

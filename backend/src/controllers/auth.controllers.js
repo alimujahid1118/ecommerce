@@ -1,11 +1,12 @@
 import userModel from "../models/user.model.js";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import envConfig from "../config/config.js";
+import cloudinary, { envConfig } from "../config/config.js";
 import sessionModel from "../models/session.model.js";
 import { generateOtp, getHtmlFromOtp } from "../utils/utils.js";
 import sendEmail from "../services/email.service.js";
 import otpModel from "../models/otp.model.js";
+import categoryModel from "../models/category.model.js";
 
 export async function register(req, res) {
 
@@ -331,4 +332,44 @@ export async function verifyEmail(req, res) {
             verified: user.verified
         }
     })
+}
+
+export async function createCategory(req, res) {
+
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({
+            message: "Access token missing."
+        });
+    }
+
+    const accessToken = authHeader.split(" ")[1];
+
+    if (!accessToken) {
+        return res.status(404).json({ message: "Invalid Access Token." })
+    }
+
+    if (accessToken) {
+        try {
+            const { name } = req.body;
+            const file = req.file;
+
+            const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+
+            const result = await cloudinary.uploader.upload(base64, { folder: 'categories' })
+
+            const response = await categoryModel.create({
+                name: name,
+                imageUrl: result.secure_url,
+                imagePublicId: result.public_id
+            })
+
+            return res.status(201).json({ message: response })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
 }
