@@ -7,14 +7,6 @@ const api = axios.create({
     withCredentials: true
 })
 
-api.interceptors.request.use((config) => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`
-    }
-    return config;
-})
-
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -27,17 +19,10 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                const refreshResponse = await api.get("/auth/update-refresh-token");
-                const newAccessToken = refreshResponse.data.accessToken
-                localStorage.setItem("accessToken", newAccessToken)
-
-                originalRequest.headers = originalRequest.headers || {};
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+                await api.get("/auth/update-refresh-token");
 
                 return api(originalRequest)
             } catch (refreshError) {
-
-                localStorage.removeItem("accessToken")
                 return Promise.reject(refreshError)
             }
         }

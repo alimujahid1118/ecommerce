@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
 
 export default function Header() {
 
-    const { menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData } = useAppContext();
+    const { menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData, isAuthChecked } = useAppContext();
     const [ formData, setFormData ] = useState({
         'email' : '',
         'password' : ''
@@ -55,7 +55,6 @@ export default function Header() {
 
         try {
             const response = await api.post("/auth/login", formData);
-            localStorage.setItem("accessToken", response.data.accessToken)
             const user = response.data.user
             setUserData(user)
             setSuccessMessage(response.data.message)
@@ -75,13 +74,23 @@ export default function Header() {
     const handleLogout = async () => {
         try {
             const response = await api.post("/auth/logout");
-            localStorage.removeItem("accessToken")
             setIsAuthenticated(false)
             setProfileOpen(false)
             navigate('/')
         } catch (err) {
             console.log(err)
         }
+    }
+    if (!isAuthChecked) {
+        return (
+            <div className="min-h-screen flex items-center justify-center px-6 py-20">
+                <p className="text-lg font-semibold text-[#132A36]">Checking authentication...</p>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to='/' replace />;
     }
 
     return(

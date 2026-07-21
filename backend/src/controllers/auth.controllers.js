@@ -147,6 +147,13 @@ export async function login(req, res) {
         { expiresIn: '10m' }
     )
 
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 10 * 60 * 1000 //10 minutes
+    })
+
     res.status(200).json({
         message: "User logged In successfully.",
         user: {
@@ -155,15 +162,19 @@ export async function login(req, res) {
             username: user.username,
             email: user.email,
             createdAt: user.createdAt
-        },
-        accessToken
+        }
     })
 }
 
 export async function logout(req, res) {
     const refreshToken = req.cookies.refreshToken;
+    const accessToken = req.cookies.accessToken;
 
     if (!refreshToken) {
+        return res.status(400).json({ message: "Invalid Token." })
+    }
+
+    if (!accessToken) {
         return res.status(400).json({ message: "Invalid Token." })
     }
 
@@ -186,13 +197,25 @@ export async function logout(req, res) {
         maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
     })
 
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 10 * 60 * 1000 //10 minutes
+    })
+
     res.status(200).json({ message: "User logged out successfully." })
 }
 
 export async function logoutAll(req, res) {
     const refreshToken = req.cookies.refreshToken;
+    const accessToken = req.cookies.accessToken;
 
     if (!refreshToken) {
+        return res.status(400).json({ message: "Invalid Token." })
+    }
+
+    if (!accessToken) {
         return res.status(400).json({ message: "Invalid Token." })
     }
 
@@ -212,6 +235,13 @@ export async function logoutAll(req, res) {
         secure: true,
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000 //7 days
+    })
+
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 10 * 60 * 1000 //10 minutes
     })
 
     res.status(200).json({ message: "User logged out successfully from all devices." })
@@ -245,7 +275,7 @@ export async function UpdateRefreshToken(req, res) {
     const newRefreshTokenHash = crypto.createHash("sha256").update(newRefreshToken).digest("hex");
 
     session.refreshTokenHash = newRefreshTokenHash;
-    session.save();
+    await session.save();
 
     res.cookie("refreshToken", newRefreshToken, {
         httpOnly: true,
@@ -260,22 +290,21 @@ export async function UpdateRefreshToken(req, res) {
         { expiresIn: '10m' }
     )
 
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 10 * 60 * 1000 //10 minutes
+    })
+
     res.status(200).json({
-        message: "Update Refresh token Successful.",
-        accessToken
+        message: "Update Refresh token Successful."
     })
 }
 
 export async function getMe(req, res) {
-    const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-        return res.status(401).json({
-            message: "Access token missing."
-        });
-    }
-
-    const accessToken = authHeader.split(" ")[1];
+    const accessToken = req.cookies.accessToken
 
     if (!accessToken) {
         return res.status(404).json({ message: "Invalid Access Token." })
@@ -336,15 +365,7 @@ export async function verifyEmail(req, res) {
 
 export async function createCategory(req, res) {
 
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-        return res.status(401).json({
-            message: "Access token missing."
-        });
-    }
-
-    const accessToken = authHeader.split(" ")[1];
+    const accessToken = req.cookies.accessToken
 
     if (!accessToken) {
         return res.status(404).json({ message: "Invalid Access Token." })
@@ -367,7 +388,15 @@ export async function createCategory(req, res) {
 
             return res.status(201).json({ message: response })
         } catch (error) {
-            console.log(error)
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json(
+                    { message: 'Token expired.' }
+                )
+            } else {
+                return res.status(401).json(
+                    { message: 'Invalid Token' }
+                )
+            }
         }
     }
 

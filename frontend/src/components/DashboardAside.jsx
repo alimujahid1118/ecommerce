@@ -9,7 +9,6 @@ export default function DashboardAside() {
     const handleLogout = async () => {
         try {
             const response = await api.post("/auth/logout");
-            localStorage.removeItem("accessToken");
             setIsAuthenticated(false)
             navigate("/");
         } catch (error) {

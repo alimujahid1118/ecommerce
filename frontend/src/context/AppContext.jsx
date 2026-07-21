@@ -24,21 +24,20 @@ export function AppProvider({ children }) {
     });
 
     useEffect(() => {
-        const accessToken = localStorage.getItem("accessToken");
-
-        if (!accessToken) {
-            setIsAuthenticated(false);
-            setIsAuthChecked(true);
-            return;
-        }
 
         const getMe = async () => {
             try {
                 const response = await api.get("/auth/get-me");
+                setUserData(response.data.user);
                 setIsAuthenticated(Boolean(response?.data?.user));
             } catch {
                 setIsAuthenticated(false);
-                localStorage.removeItem("accessToken");
+                setUserData({
+                    firstName: "",
+                    lastName: "",
+                    username: "",
+                    email: "",
+                });
             } finally {
                 setIsAuthChecked(true);
             }
