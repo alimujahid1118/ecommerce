@@ -1,36 +1,42 @@
-import { BrevoClient } from "@getbrevo/brevo";
 import { envConfig } from "../config/config.js";
+import nodemailer from "nodemailer";
 
-const client = new BrevoClient({
-    apiKey: envConfig.BREVO_API_KEY,
+const transporter = nodemailer.createTransport({
+
+    service: 'gmail',
+
+    logger: true,
+    debug: true,
+
+    auth: {
+        type: 'OAuth2',
+        clientId: envConfig.CLIENT_ID,
+        clientSecret: envConfig.CLIENT_SECRET,
+        refreshToken: envConfig.GOOGLE_REFRESH_TOKEN,
+        user: envConfig.GOOGLE_USER
+    },
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.log(error);
+    } else {
+        console.log("SMTP Ready");
+    }
 });
 
 async function sendEmail(to, subject, text, html) {
-    try {
-        const response = await client.transactionalEmails.sendTransacEmail({
-            sender: {
-                name: "E Shop",
-                email: envConfig.BREVO_LOGIN, // verified sender
-            },
+    const info = await transporter.sendMail({
+        from: `E Shop <${envConfig.GOOGLE_USER}>`,
+        to,
+        subject,
+        text,
+        html,
+    });
 
-            to: [
-                {
-                    email: to,
-                },
-            ],
+    console.log("Email sent:", info.messageId);
 
-            subject,
-            htmlContent: html,
-            textContent: text,
-        });
-
-        console.log(response);
-
-        return response;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
+    return info;
 }
 
 export default sendEmail;
