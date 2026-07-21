@@ -29,7 +29,7 @@ export function AppProvider({ children }) {
             try {
                 const response = await api.get("/auth/get-me");
                 setUserData(response.data.user);
-                setIsAuthenticated(Boolean(response?.data?.user));
+                setIsAuthenticated(true);
             } catch {
                 setIsAuthenticated(false);
                 setUserData({

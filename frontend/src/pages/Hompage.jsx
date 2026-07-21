@@ -1,11 +1,9 @@
-import Header from "../components/Header";
 import camera from "../assets/camera.png";
 import keyboard from "../assets/keyboard.png";
 import headphone from "../assets/headphone.png";
 import phone from "../assets/phone.png";
 import smartwatch from "../assets/smartwatch.png";
 import discountBanner from "../assets/discount-banner.png";
-import Footer from "../components/Footer";
 
 export default function Homepage() {
 
