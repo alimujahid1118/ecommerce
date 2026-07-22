@@ -32,6 +32,20 @@ authRouter.post('/auth/verify-email', authController.verifyEmail)
 
 authRouter.post('/auth/create-category', upload.single("image"), authController.createCategory)
 
+// GET /api/auth/get-category
+
 authRouter.get('/auth/get-category', authController.getCategory)
+
+// GET /api/auth/get-category/id
+
+authRouter.get('/auth/get-category/:id', authController.getCategoryById)
+
+// PUT /api/auth/update-category
+
+authRouter.put('/auth/update-category/:id', upload.single("image"), authController.updateCategory)
+
+// DELETE /api/auth/delete-category
+
+authRouter.delete('/auth/delete-category/:id', authController.deleteCategory)
 
 export default authRouter;

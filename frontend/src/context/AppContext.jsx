@@ -9,8 +9,8 @@ export function AppProvider({ children }) {
     const [profileOpen, setProfileOpen] = useState(false);
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isAuthChecked, setIsAuthChecked] = useState(false);
     const [category, setCategory] = useState([])
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
 
     const [userData, setUserData] = useState({
         firstName: "",
@@ -32,7 +32,6 @@ export function AppProvider({ children }) {
                 setUserData(response.data.user);
                 setIsAuthenticated(true);
             } catch {
-                setIsAuthenticated(false);
                 setUserData({
                     firstName: "",
                     lastName: "",
@@ -40,8 +39,8 @@ export function AppProvider({ children }) {
                     email: "",
                 });
             } finally {
-                setIsAuthChecked(true);
-            }
+            setIsAuthLoading(false);
+        }
         };
 
         getMe();
@@ -70,7 +69,6 @@ export function AppProvider({ children }) {
 
                 isAuthenticated,
                 setIsAuthenticated,
-                isAuthChecked,
 
                 userData,
                 setUserData,
@@ -79,7 +77,9 @@ export function AppProvider({ children }) {
                 setCategoryData,
 
                 category,
-                setCategory
+                setCategory,
+
+                isAuthLoading
             }}
         >
             {children}

@@ -4,13 +4,10 @@ import { useAppContext } from "../context/AppContext";
 
 export default function Dashboard () {
 
-    const { isAuthenticated, setIsAuthenticated, isAuthChecked, userData } = useAppContext();
-    if (!isAuthChecked) {
-        return (
-            <div className="min-h-screen flex items-center justify-center px-6 py-20">
-                <p className="text-lg font-semibold text-[#132A36]">Checking authentication...</p>
-            </div>
-        );
+    const { isAuthenticated, setIsAuthenticated, userData, isAuthLoading } = useAppContext();
+
+    if (isAuthLoading) {
+        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
     }
 
     if (!isAuthenticated) {

@@ -429,3 +429,133 @@ export async function getCategory(req, res) {
         }
     }
 }
+
+export async function getCategoryById(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: 'Invalid access token'
+        })
+    }
+
+    if (accessToken) {
+        try {
+            const { id } = req.params;
+
+            const category = await categoryModel.findById(id)
+
+            if (!category) {
+                return res.status(404).json({
+                    message: 'Category not found.'
+                })
+            }
+            return res.status(200).json(category)
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: 'Token Expired.'
+                })
+            } else {
+                return res.status(401).json({
+                    message: 'Invalid Token.'
+                })
+            }
+        }
+    }
+}
+
+export async function updateCategory(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({ message: "Invalid Access Token." });
+    }
+
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+        const file = req.file;
+
+        const category = await categoryModel.findById(id);
+
+        if (!category) {
+            return res.status(404).json({
+                message: "Category not found.",
+            });
+        }
+
+        // Update name
+        if (name) {
+            category.name = name;
+        }
+
+        // Update image only if a new image was uploaded
+        if (file) {
+            // Delete old image
+            await cloudinary.uploader.destroy(category.imagePublicId);
+
+            // Upload new image
+            const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+
+            const result = await cloudinary.uploader.upload(base64, {
+                folder: "categories",
+            });
+
+            category.imageUrl = result.secure_url;
+            category.imagePublicId = result.public_id;
+        }
+
+        await category.save();
+
+        return res.status(200).json(category);
+
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({ message: 'Expired Token.' });
+        } else {
+            return res.status(401).json({ message: 'Invalid Token.' });
+        }
+    }
+}
+
+export async function deleteCategory(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: 'Invalid Token.'
+        })
+    }
+
+    if (accessToken) {
+        try {
+            const id = req.params.id;
+
+            if (!id) {
+                return res.status(400).json({
+                    message: 'Invalid id.'
+                })
+            }
+
+            if (id) {
+                await categoryModel.findByIdAndDelete(id)
+                return res.status(200).json({
+                    message: 'Category deleted successfully.'
+                })
+            }
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: 'Token Expired.'
+                })
+            } else {
+                return res.status(401).json({
+                    message: 'Invalid Token.'
+                })
+            }
+        }
+    }
+
+
+}

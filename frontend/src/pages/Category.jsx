@@ -1,11 +1,16 @@
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 
 export default function Category () {
 
-    const { isAuthenticated, setIsAuthenticated, categoryData, setCategoryData, category, setCategory, isAuthChecked } = useAppContext();
+    const { isAuthenticated, setIsAuthenticated, categoryData, setCategoryData, category, setCategory, isAuthLoading } = useAppContext();
+
+    if (isAuthLoading) {
+        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -26,12 +31,15 @@ export default function Category () {
         }
     };
 
-    if (!isAuthChecked) {
-    return (
-        <div className="min-h-screen flex items-center justify-center px-6 py-20">
-            <p className="text-lg font-semibold text-[#132A36]">Checking authentication...</p>
-        </div>
-    );
+    const handleDelete = async (id) => {
+        try {
+            await api.delete(`/auth/delete-category/${id}`)
+            setCategory((prev) =>
+                prev.filter((eachCategory) => eachCategory._id !== id)
+            );
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     if (!isAuthenticated) {
@@ -44,7 +52,7 @@ export default function Category () {
             <main className="flex flex-col">
                 <div className="flex flex-col gap-4 px-6">
                     <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">MANAGE CATEGORIES</h1>
-                    <p className="text-sm md:hidden text-[#104185] px-2">You can create, update and delete categories on this page.</p>
+                    <p className="text-sm text-[#104185] px-2 md:px-4">You can create, update and delete categories on this page.</p>
                 </div>
                 {/* Mobile */}
                 <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
@@ -65,11 +73,11 @@ export default function Category () {
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                    <Link to={`/dashboard/update-category/${eachCategory._id}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
                                         Update
-                                    </button>
+                                    </Link>
 
-                                    <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                    <button onClick={() => handleDelete(eachCategory._id)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                         Delete
                                     </button>
                                 </div>
@@ -104,49 +112,25 @@ export default function Category () {
                                         </td>
 
                                         <td className="text-center">
-                                            <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                            <Link to={`/dashboard/update-category/${eachCategory._id}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
                                                 Update
-                                            </button>
+                                            </Link>
                                         </td>
 
                                         <td className="text-center">
-                                            <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                            <button onClick={() => handleDelete(eachCategory._id)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                                 Delete
                                             </button>
                                         </td>
                                     </tr>
                                 ))
                             }
-                            
-
-                            <tr className="border-t">
-                                <td className="p-4">Laptop</td>
-
-                                <td className="p-4">
-                                    <img
-                                        src="/web-logo.png"
-                                        className="w-16 h-16 rounded object-cover"
-                                    />
-                                </td>
-
-                                <td className="text-center">
-                                    <button className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
-                                        Update
-                                    </button>
-                                </td>
-
-                                <td className="text-center">
-                                    <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
 
                 {/* Create Category */}
-                <h1 className="text-2xl font-semibold text-center md:text-start pt-4 md:pl-4 text-[#132A36]">CREATE CATEGORY</h1>
+                <h1 className="text-2xl font-semibold text-center md:text-start pt-4 md:pl-8 text-[#132A36]">CREATE CATEGORY</h1>
                 <div className="flex flex-col py-4 bg-white mt-4 mx-4 rounded-lg">
                     <form onSubmit={handleSubmit} className="flex flex-col px-4 gap-4">
                         <div className="flex flex-col gap-2">
