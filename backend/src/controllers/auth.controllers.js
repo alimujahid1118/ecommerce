@@ -404,29 +404,11 @@ export async function createCategory(req, res) {
 }
 
 export async function getCategory(req, res) {
-    const accessToken = req.cookies.accessToken;
-
-    if (!accessToken) {
-        return res.status(401).json({
-            message: 'Invalid access token'
-        })
-    }
-
-    if (accessToken) {
-        try {
-            const category = await categoryModel.find()
-            return res.status(200).json(category)
-        } catch (error) {
-            if (error.name === "TokenExpiredError") {
-                return res.status(401).json({
-                    message: 'Invalid Access Token'
-                })
-            } else {
-                return res.status(401).json({
-                    message: 'Invalid Token'
-                })
-            }
-        }
+    try {
+        const category = await categoryModel.find()
+        return res.status(200).json(category)
+    } catch (error) {
+        console.log(error)
     }
 }
 
