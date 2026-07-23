@@ -69,7 +69,7 @@ export default function Homepage() {
                     </div>
                     <Link className="text-xs md:absolute md:right-10 md:text-md md:font-semibold md:justify-end px-4 py-2 border-[1px] border-[#132A36] rounded-lg">All Products</Link>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 py-6 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 py-6 w-full">
                     {getProducts?.map((product) => (
                         <div
                             key={product._id}
