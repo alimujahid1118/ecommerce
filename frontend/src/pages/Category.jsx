@@ -31,11 +31,11 @@ export default function Category () {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (slug) => {
         try {
-            await api.delete(`/auth/delete-category/${id}`)
+            await api.delete(`/auth/delete-category/${slug}`)
             setCategory((prev) =>
-                prev.filter((eachCategory) => eachCategory._id !== id)
+                prev.filter((eachCategory) => eachCategory.slug !== slug)
             );
         } catch (error) {
             console.log(error)
@@ -73,11 +73,11 @@ export default function Category () {
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Link to={`/dashboard/update-category/${eachCategory._id}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                    <Link to={`/dashboard/update-category/${eachCategory.slug}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
                                         Update
                                     </Link>
 
-                                    <button onClick={() => handleDelete(eachCategory._id)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                    <button onClick={() => handleDelete(eachCategory.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                         Delete
                                     </button>
                                 </div>
@@ -112,13 +112,13 @@ export default function Category () {
                                         </td>
 
                                         <td className="text-center">
-                                            <Link to={`/dashboard/update-category/${eachCategory._id}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                            <Link to={`/dashboard/update-category/${eachCategory.slug}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
                                                 Update
                                             </Link>
                                         </td>
 
                                         <td className="text-center">
-                                            <button onClick={() => handleDelete(eachCategory._id)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                            <button onClick={() => handleDelete(eachCategory.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                                 Delete
                                             </button>
                                         </td>

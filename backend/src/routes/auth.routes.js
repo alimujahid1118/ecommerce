@@ -36,17 +36,17 @@ authRouter.post('/auth/create-category', upload.single("image"), authController.
 
 authRouter.get('/auth/get-category', authController.getCategory)
 
-// GET /api/auth/get-category/id
+// GET /api/auth/get-category/slug
 
-authRouter.get('/auth/get-category/:id', authController.getCategoryById)
+authRouter.get('/auth/get-category/:slug', authController.getCategoryBySlug)
 
-// PUT /api/auth/update-category
+// PUT /api/auth/update-category/slug
 
-authRouter.put('/auth/update-category/:id', upload.single("image"), authController.updateCategory)
+authRouter.put('/auth/update-category/:slug', upload.single("image"), authController.updateCategory)
 
-// DELETE /api/auth/delete-category
+// DELETE /api/auth/delete-category/slug
 
-authRouter.delete('/auth/delete-category/:id', authController.deleteCategory)
+authRouter.delete('/auth/delete-category/:slug', authController.deleteCategory)
 
 // POST /api/auth/create-product
 

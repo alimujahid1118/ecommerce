@@ -61,13 +61,17 @@ export function AppProvider({ children }) {
         }, [])
 
     useEffect(() => {
-        const getAllProducts = async() => {
-            const response = await api.get("/auth/get-products");
-            setGetProducts(response.data)
-        }
+        const getAllProducts = async () => {
+            try {
+                const response = await api.get("/auth/get-products");
+                setGetProducts(response.data.products);
+            } catch (error) {
+                console.error(error);
+            }
+        };
 
-        getAllProducts()
-    }, [])
+        getAllProducts();
+    }, []);
 
     return (
         <AppContext.Provider

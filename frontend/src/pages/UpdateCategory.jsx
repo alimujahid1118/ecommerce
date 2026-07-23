@@ -7,25 +7,25 @@ import api from "../api/axios";
 export default function UpdateCategory() {
 
     const { setIsAuthenticated, setCategory } = useAppContext();
-    const [ categoryById, setCategoryById ] = useState(null)
-    const [ updateCategoryById, setUpdateCategoryById ] = useState({
-        'name' : categoryById?.name,
+    const [ categoryBySlug, setCategoryBySlug ] = useState(null)
+    const [ updateCategoryBySlug, setUpdateCategoryBySlug ] = useState({
+        'name' : categoryBySlug?.name,
         'imageUrl' : null
     })
-    const { id } = useParams();
+    const { slug } = useParams();
 
     useEffect(() => {
-        const getCategoryId = async () => {
+        const getCategorySlug = async () => {
             try {
-                const response = await api.get(`/auth/get-category/${id}`)
+                const response = await api.get(`/auth/get-category/${slug}`)
                 const updatedCategory = response.data;
-                setCategoryById(updatedCategory)
+                setCategoryBySlug(updatedCategory)
             } catch (error) {
                 console.log(error)
             }
         }
 
-        getCategoryId();
+        getCategorySlug();
     }, [])
 
     const handleSubmit = async(e) => {
@@ -35,18 +35,18 @@ export default function UpdateCategory() {
 
             const data = new FormData();
 
-            data.append("name", updateCategoryById.name);
-            data.append("image", updateCategoryById.imageUrl);
+            data.append("name", updateCategoryBySlug.name);
+            data.append("image", updateCategoryBySlug.imageUrl);
 
-            const response = await api.put(`/auth/update-category/${id}`, data)
+            const response = await api.put(`/auth/update-category/${slug}`, data)
             const updatedCategory = response.data;
             setCategory((prev) =>
                     prev.map((cat) =>
                         cat._id === updatedCategory._id ? updatedCategory : cat
                     )
                 );
-            setCategoryById(updatedCategory)
-            setUpdateCategoryById({
+            setCategoryBySlug(updatedCategory)
+            setUpdateCategoryBySlug({
                 'name' : '',
                 'image' : null
             })
@@ -68,13 +68,13 @@ export default function UpdateCategory() {
                     <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
                         <div>
                             <p className="text-xs text-slate-500">Name</p>
-                            <p className="font-medium">{categoryById?.name}</p>
+                            <p className="font-medium">{categoryBySlug?.name}</p>
                         </div>
 
                         <div className="flex flex-col gap-2">
                             <p className="text-xs text-slate-500">Image</p>
                             <img
-                                src={categoryById?.imageUrl}
+                                src={categoryBySlug?.imageUrl}
                                 className="w-20 h-20 object-cover rounded"
                             />
                         </div>
@@ -93,11 +93,11 @@ export default function UpdateCategory() {
 
                         <tbody>
                             <tr className="border-t">
-                                <td className="p-4">{categoryById?.name}</td>
+                                <td className="p-4">{categoryBySlug?.name}</td>
 
                                 <td className="p-4">
                                     <img
-                                        src={categoryById?.imageUrl}
+                                        src={categoryBySlug?.imageUrl}
                                         className="w-16 h-16 rounded object-cover"
                                     />
                                 </td>
@@ -111,18 +111,18 @@ export default function UpdateCategory() {
                     <form onSubmit={handleSubmit} className="flex flex-col px-4 gap-4">
                         <div className="flex flex-col gap-2">
                             <p className="text-md font-semibold text-[#104185]">Name</p>
-                            <input name="name" value={updateCategoryById?.name} onChange=
+                            <input name="name" value={updateCategoryBySlug?.name} onChange=
                                 {
                                     (e) => {
-                                        setUpdateCategoryById(
-                                        {...updateCategoryById, name: e.target.value})
+                                        setUpdateCategoryBySlug(
+                                        {...updateCategoryBySlug, name: e.target.value})
 
                                 }
                                 } placeholder="New Category name.." type="text" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
                         </div>
                         <div className="flex flex-col gap-2">
                             <p className="text-md font-semibold text-[#104185]">Image</p>
-                            <input name="imageUrl" onChange={(e) => setUpdateCategoryById({...updateCategoryById, imageUrl: e.target.files[0]})} type="file" accept="image/*" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
+                            <input name="imageUrl" onChange={(e) => setUpdateCategoryBySlug({...updateCategoryBySlug, imageUrl: e.target.files[0]})} type="file" accept="image/*" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
                         </div>
                         <button type="submit" className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2">SEND</button>
                     </form>

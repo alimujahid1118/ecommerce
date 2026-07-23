@@ -1,4 +1,3 @@
-import keyboard from "../assets/keyboard.png";
 import discountBanner from "../assets/discount-banner.png";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom"
@@ -63,11 +62,11 @@ export default function Homepage() {
             {/* Products */}
             <div className="flex flex-col items-center py-6 px-2">
                 <div className="flex flex-row items-center justify-center gap-2 md:gap-0">
-                    <div className="flex flex-col">
-                        <h2 className="text-3xl font-bold text-[#132A36]">Products</h2>
+                    <div className="flex flex-col text-center">
+                        <h2 className="text-3xl font-bold text-[#132A36]">Featured Products</h2>
                         <h3 className="text-md text-[#104185]">Our most selling items</h3>
                     </div>
-                    <Link className="text-xs md:absolute md:right-10 md:text-md md:font-semibold md:justify-end px-4 py-2 border-[1px] border-[#132A36] rounded-lg">All Products</Link>
+                    <Link to="/products" className="text-xs md:absolute md:right-10 md:text-md md:font-semibold md:justify-end px-4 py-2 border-[1px] border-[#132A36] rounded-lg">All Products</Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 py-6 w-full">
                     {getProducts?.map((product) => (

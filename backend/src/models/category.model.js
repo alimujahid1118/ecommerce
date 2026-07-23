@@ -6,6 +6,10 @@ const categorySchema = new mongoose.Schema({
         required: [true, "Category Name is a required field."],
         unique: [true, "Category Name must be unique."]
     },
+    'slug': {
+        type: String,
+        required: [true, "Product Slug is a required field."]
+    },
     'imageUrl': {
         type: String,
         required: [true, "Category Name is a required field."]

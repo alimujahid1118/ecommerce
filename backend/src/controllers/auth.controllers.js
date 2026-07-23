@@ -8,6 +8,7 @@ import sendEmail from "../services/email.service.js";
 import otpModel from "../models/otp.model.js";
 import categoryModel from "../models/category.model.js";
 import productModel from "../models/product.model.js";
+import slugify from "slugify";
 
 export async function register(req, res) {
 
@@ -375,7 +376,26 @@ export async function createCategory(req, res) {
     if (accessToken) {
         try {
             const { name } = req.body;
+            const slug = slugify(name, {
+                lower: true,
+                strict: true,
+                trim: true
+            })
             const file = req.file;
+
+            if (!name) {
+                return res.status(400).json({
+                    message: "Category name cannot be empty."
+                })
+            }
+
+            const existingCategory = await categoryModel.findOne({ slug: slug })
+
+            if (existingCategory) {
+                return res.status(400).json({
+                    message: 'Category Name should be unique'
+                })
+            }
 
             const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
 
@@ -383,6 +403,7 @@ export async function createCategory(req, res) {
 
             const category = await categoryModel.create({
                 name: name,
+                slug: slug,
                 imageUrl: result.secure_url,
                 imagePublicId: result.public_id
             })
@@ -413,8 +434,11 @@ export async function getCategory(req, res) {
     }
 }
 
-export async function getCategoryById(req, res) {
+export async function getCategoryBySlug(req, res) {
     const accessToken = req.cookies.accessToken;
+
+    console.log(req.params);
+    console.log(req.params.slug);
 
     if (!accessToken) {
         return res.status(401).json({
@@ -424,9 +448,9 @@ export async function getCategoryById(req, res) {
 
     if (accessToken) {
         try {
-            const { id } = req.params;
+            const { slug } = req.params;
 
-            const category = await categoryModel.findById(id)
+            const category = await categoryModel.findOne({ slug: slug })
 
             if (!category) {
                 return res.status(404).json({
@@ -456,11 +480,11 @@ export async function updateCategory(req, res) {
     }
 
     try {
-        const { id } = req.params;
+        const { slug } = req.params;
         const { name } = req.body;
         const file = req.file;
 
-        const category = await categoryModel.findById(id);
+        const category = await categoryModel.findOne({ slug: slug })
 
         if (!category) {
             return res.status(404).json({
@@ -471,6 +495,12 @@ export async function updateCategory(req, res) {
         // Update name
         if (name) {
             category.name = name;
+            const slug = slugify(name, {
+                lower: true,
+                strict: true,
+                trim: true
+            })
+            category.slug = slug;
         }
 
         // Update image only if a new image was uploaded
@@ -513,16 +543,16 @@ export async function deleteCategory(req, res) {
 
     if (accessToken) {
         try {
-            const id = req.params.id;
+            const { slug } = req.params;
 
-            if (!id) {
+            if (!slug) {
                 return res.status(400).json({
                     message: 'Invalid id.'
                 })
             }
 
-            if (id) {
-                await categoryModel.findByIdAndDelete(id)
+            if (slug) {
+                await categoryModel.findOneAndDelete({ slug: slug })
                 return res.status(200).json({
                     message: 'Category deleted successfully.'
                 })
@@ -568,9 +598,15 @@ export async function createProduct(req, res) {
             try {
                 const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
                 const result = await cloudinary.uploader.upload(base64, { folder: "products" })
+                const slug = slugify(name, {
+                    lower: true,
+                    strict: true,
+                    trim: true
+                })
 
                 const product = await productModel.create({
                     name: name,
+                    slug: slug,
                     imageUrl: result.secure_url,
                     imagePublicId: result.public_id,
                     price: price,
@@ -605,16 +641,44 @@ export async function createProduct(req, res) {
 }
 
 export async function getProducts(req, res) {
+    const { category, sort } = req.query;
     try {
-        const products = await productModel.find().populate("author", "firstName lastName").populate("category", "name")
-        if (!products) {
-            return res.status(404).json({
-                message: 'Products does not exist.'
-            })
+        const filter = {};
+
+        if (category) {
+            const categoryDoc = await categoryModel.findOne({ slug: category });
+
+            if (!categoryDoc) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Category not found.",
+                });
+            }
+
+            filter.category = categoryDoc._id;
         }
 
-        return res.status(200).json(products)
+        let query = productModel.find(filter);
+
+        if (sort === "asc") {
+            query = query.sort({ price: 1 });
+        }
+
+        if (sort === "desc") {
+            query = query.sort({ price: -1 });
+        }
+
+        const products = await query;
+
+        return res.status(200).json({
+            success: true,
+            products,
+        });
     } catch (error) {
         console.error(error)
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
     }
 }
