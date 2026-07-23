@@ -9,6 +9,7 @@ import Category from "./pages/Category";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import UpdateCategory from "./pages/UpdateCategory";
+import Product from "./pages/Product";
 
 function App() {
     return (
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/dashboard/category" element={<Category />} />
                 <Route path="/dashboard/update-category/:id" element={<UpdateCategory />} />
+                <Route path="/dashboard/product" element={<Product />} />
             </Routes>
 
             <Footer />

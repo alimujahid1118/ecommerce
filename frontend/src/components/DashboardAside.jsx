@@ -22,12 +22,12 @@ export default function DashboardAside() {
                 Dashboard
             </Link>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
-            <div className="px-6">
-                My Orders
-            </div>
-            <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <Link to='/dashboard/category' className="px-6">
                 Categories
+            </Link>
+            <p className="w-full bg-slate-200 py-[0.5px]"></p>
+            <Link to="/dashboard/product" className="px-6">
+                Products
             </Link>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="px-6">
@@ -35,7 +35,7 @@ export default function DashboardAside() {
             </div>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="px-6">
-                Saved Payment Methods
+                My Orders
             </div>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="px-6">

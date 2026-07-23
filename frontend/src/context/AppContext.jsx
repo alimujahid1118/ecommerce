@@ -7,9 +7,10 @@ export function AppProvider({ children }) {
 
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [category, setCategory] = useState([])
+    const [getProducts, setGetProducts] = useState([])
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [category, setCategory] = useState([])
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
     const [userData, setUserData] = useState({
@@ -59,6 +60,15 @@ export function AppProvider({ children }) {
             getCategory()
         }, [])
 
+    useEffect(() => {
+        const getAllProducts = async() => {
+            const response = await api.get("/auth/get-products");
+            setGetProducts(response.data)
+        }
+
+        getAllProducts()
+    }, [])
+
     return (
         <AppContext.Provider
             value={{
@@ -79,7 +89,10 @@ export function AppProvider({ children }) {
                 category,
                 setCategory,
 
-                isAuthLoading
+                isAuthLoading,
+
+                getProducts,
+                setGetProducts
             }}
         >
             {children}

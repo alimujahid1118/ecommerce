@@ -1,10 +1,11 @@
 import keyboard from "../assets/keyboard.png";
 import discountBanner from "../assets/discount-banner.png";
 import { useAppContext } from "../context/AppContext";
+import { Link } from "react-router-dom"
 
 export default function Homepage() {
 
-    const { category } = useAppContext();
+    const { category, getProducts } = useAppContext();
 
     return (
         <>
@@ -60,49 +61,45 @@ export default function Homepage() {
             </div>
 
             {/* Products */}
-            <div className="flex flex-col items-center py-6 px-6">
-                <div className="flex flex-col items-center">
-                    <h2 className="text-3xl font-bold text-[#132A36]">Products - All</h2>
-                    <h3 className="text-md text-[#104185]">Our most selling items</h3>
+            <div className="flex flex-col items-center py-6 px-2">
+                <div className="flex flex-row items-center justify-center gap-2 md:gap-0">
+                    <div className="flex flex-col">
+                        <h2 className="text-3xl font-bold text-[#132A36]">Products</h2>
+                        <h3 className="text-md text-[#104185]">Our most selling items</h3>
+                    </div>
+                    <Link className="text-xs md:absolute md:right-10 md:text-md md:font-semibold md:justify-end px-4 py-2 border-[1px] border-[#132A36] rounded-lg">All Products</Link>
                 </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 py-6 w-full">
+                    {getProducts?.map((product) => (
+                        <div
+                            key={product._id}
+                            className="flex flex-col gap-2 items-center p-4 border shadow-lg rounded-lg h-full"
+                        >
+                            <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="w-40 h-40 object-contain"
+                            />
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
-                    <div className="flex flex-col items-center text-center gap-2 py-6 px-4 border-[1px] shadow-lg rounded-lg">
-                        <img src={keyboard} alt="keyboard" />
-                        <p className="text-[#132A36] font-bold text-md">Wireless RGB gaming keyboard...</p>
-                        <p className="text-[#104185] text-sm font-semibold">Rs 9999</p>
-                        <button className="bg-[#132A36] px-4 py-2 w-full rounded-lg text-nowrap text-white">View details</button>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-2 py-6 px-4 border-[1px] shadow-lg rounded-lg">
-                        <img src={keyboard} alt="keyboard" />
-                        <p className="text-[#132A36] font-bold text-md">Wireless RGB gaming keyboard...</p>
-                        <p className="text-[#104185] text-sm font-semibold">Rs 9999</p>
-                        <button className="bg-[#132A36] px-4 py-2 w-full rounded-lg text-nowrap text-white">View details</button>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-2 py-6 px-4 border-[1px] shadow-lg rounded-lg">
-                        <img src={keyboard} alt="keyboard" />
-                        <p className="text-[#132A36] font-bold text-md">Wireless RGB gaming keyboard...</p>
-                        <p className="text-[#104185] text-sm font-semibold">Rs 9999</p>
-                        <button className="bg-[#132A36] px-4 py-2 w-full rounded-lg text-nowrap text-white">View details</button>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-2 py-6 px-4 border-[1px] shadow-lg rounded-lg">
-                        <img src={keyboard} alt="keyboard" />
-                        <p className="text-[#132A36] font-bold text-md">Wireless RGB gaming keyboard...</p>
-                        <p className="text-[#104185] text-sm font-semibold">Rs 9999</p>
-                        <button className="bg-[#132A36] px-4 py-2 w-full rounded-lg text-nowrap text-white">View details</button>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-2 py-6 px-4 border-[1px] shadow-lg rounded-lg">
-                        <img src={keyboard} alt="keyboard" />
-                        <p className="text-[#132A36] font-bold text-md">Wireless RGB gaming keyboard...</p>
-                        <p className="text-[#104185] text-sm font-semibold">Rs 9999</p>
-                        <button className="bg-[#132A36] px-4 py-2 w-full rounded-lg text-nowrap text-white">View details</button>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-2 py-6 px-4 border-[1px] shadow-lg rounded-lg">
-                        <img src={keyboard} alt="keyboard" />
-                        <p className="text-[#132A36] font-bold text-md">Wireless RGB gaming keyboard...</p>
-                        <p className="text-[#104185] text-sm font-semibold">Rs 9999</p>
-                        <button className="bg-[#132A36] px-4 py-2 w-full rounded-lg text-nowrap text-white">View details</button>
-                    </div>
+                            <p
+                                className="mt-3 text-[#132A36] font-bold text-center w-full"
+                            >
+                                {product.name.length > 30
+                                ? `${product.name.slice(0, 30)}..`
+                                : product.name}
+                            </p>
+
+                            <div className="mt-auto w-full">
+                                <p className="text-[#104185] text-md font-semibold text-center mb-2">
+                                    ${product.price}
+                                </p>
+
+                                <button className="w-full bg-[#132A36] py-2 rounded-lg text-white">
+                                    View details
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </>
