@@ -7,6 +7,7 @@ import { generateOtp, getHtmlFromOtp } from "../utils/utils.js";
 import sendEmail from "../services/email.service.js";
 import otpModel from "../models/otp.model.js";
 import categoryModel from "../models/category.model.js";
+import productModel from "../models/product.model.js";
 
 export async function register(req, res) {
 
@@ -540,4 +541,80 @@ export async function deleteCategory(req, res) {
     }
 
 
+}
+
+export async function createProduct(req, res) {
+
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: 'Invalid Token.'
+        })
+    }
+
+    if (accessToken) {
+        try {
+            const { name, price, stock, category } = req.body;
+            const file = req.file;
+            const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+
+            if (!name || !price || !stock || !category || !file) {
+                return res.status(400).json({
+                    message: 'Please enter all fields.'
+                })
+            }
+
+            try {
+                const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+                const result = await cloudinary.uploader.upload(base64, { folder: "products" })
+
+                const product = await productModel.create({
+                    name: name,
+                    imageUrl: result.secure_url,
+                    imagePublicId: result.public_id,
+                    price: price,
+                    author: user.id,
+                    stock: stock,
+                    category: category
+                })
+
+                const getProduct = await productModel.findById(product._id).populate("author", "firstName lastName").populate("category", "name")
+
+                return res.status(201).json(getProduct)
+            } catch (error) {
+                console.error(error);
+                return res.status(500).json({
+                    message: 'Something went wrong.'
+                })
+            }
+
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: 'Token Expired.'
+                })
+            } else {
+                return res.status(401).json({
+                    message: 'Invalid Token.'
+                })
+            }
+        }
+    }
+
+}
+
+export async function getProducts(req, res) {
+    try {
+        const products = await productModel.find().populate("author", "firstName lastName").populate("category", "name")
+        if (!products) {
+            return res.status(404).json({
+                message: 'Products does not exist.'
+            })
+        }
+
+        return res.status(200).json(products)
+    } catch (error) {
+        console.error(error)
+    }
 }

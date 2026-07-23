@@ -48,4 +48,12 @@ authRouter.put('/auth/update-category/:id', upload.single("image"), authControll
 
 authRouter.delete('/auth/delete-category/:id', authController.deleteCategory)
 
+// POST /api/auth/create-product
+
+authRouter.post('/auth/create-product', upload.single("image"), authController.createProduct)
+
+// GET /api/auth/get-products
+
+authRouter.get('/auth/get-products', authController.getProducts)
+
 export default authRouter;
