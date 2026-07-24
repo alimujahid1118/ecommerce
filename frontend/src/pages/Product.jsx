@@ -115,11 +115,11 @@ export default function Product () {
                                 </div>
 
                                 <div className="flex gap-3">
-                                    <Link to={`/dashboard/update-category/`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                    <Link to={`/dashboard/update-product/${product.slug}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
                                         Update
                                     </Link>
 
-                                    <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                    <button onClick={() => handleLogout(product.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                         Delete
                                     </button>
                                 </div>
@@ -163,7 +163,7 @@ export default function Product () {
                                         <td className="pr-2">{product.category.name}</td>
 
                                         <td className="text-center">
-                                            <Link to={`/dashboard/update-category/`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
+                                            <Link to={`/dashboard/update-product/${product.slug}`} className="bg-white text-[#132A36] border-[1px] border-[#132A36] px-3 py-2 rounded-lg">
                                                 Update
                                             </Link>
                                         </td>

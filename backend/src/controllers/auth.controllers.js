@@ -685,8 +685,13 @@ export async function getProducts(req, res) {
 
 export async function getProductBySlug(req, res) {
     const { slug } = req.params;
-    res.json(slug)
-    console.log(slug)
+
+    try {
+        const product = await productModel.findOne({ slug: slug }).populate("author", "firstName lastName").populate("category", "name slug")
+        return res.status(200).json(product)
+    } catch (error) {
+        console.log(error)
+    }
 }
 
 export async function deleteProduct(req, res) {
@@ -718,4 +723,56 @@ export async function deleteProduct(req, res) {
             })
         }
     }
+}
+
+export async function updateProductBySlug(req, res) {
+
+    const { name, price, stock, category } = req.body;
+    const file = req.file;
+
+    const newSlug = slugify(name, {
+        lower: true,
+        strict: true,
+        trim: true
+    })
+    const { slug } = req.params;
+
+    const product = await productModel.findOne({ slug: slug })
+
+    if (name) {
+        product.name = name;
+    }
+    if (price) {
+        product.price = price;
+    }
+    if (stock) {
+        product.stock = stock;
+    }
+
+    if (category) {
+        const existingCategory = await categoryModel.findOne({
+            slug: category,
+        });
+
+        product.category = existingCategory._id;
+    }
+
+    if (file) {
+        const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
+        await cloudinary.uploader.destroy(product.imagePublicId)
+
+        const result = await cloudinary.uploader.upload(base64, { foler: 'products' })
+
+        product.imageUrl = result.secure_url;
+        product.imagePublicId = result.public_id;
+    }
+
+    await product.save()
+
+    const updatedProduct = await productModel
+        .findById(product._id)
+        .populate("author", "firstName lastName")
+        .populate("category", "name slug");
+
+    return res.status(201).json(updatedProduct)
 }

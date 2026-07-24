@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import UpdateCategory from "./pages/UpdateCategory";
 import Product from "./pages/Product";
 import AllProducts from "./pages/AllProducts";
+import UpdateProduct from "./pages/UpdateProduct";
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/dashboard/update-category/:slug" element={<UpdateCategory />} />
                 <Route path="/dashboard/product" element={<Product />} />
                 <Route path="/products" element={<AllProducts />} />
+                <Route path="dashboard/update-product/:slug" element={<UpdateProduct />} />
             </Routes>
 
             <Footer />

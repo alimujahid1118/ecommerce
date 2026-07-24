@@ -60,4 +60,12 @@ authRouter.get('/auth/get-products', authController.getProducts)
 
 authRouter.delete('/auth/delete-product/:slug', authController.deleteProduct)
 
+// GET /api/auth/get-product/slug
+
+authRouter.get('/auth/get-product/:slug', authController.getProductBySlug)
+
+// PUT /api/auth/update-product/slug
+
+authRouter.put('/auth/update-product/:slug', upload.single("image"), authController.updateProductBySlug)
+
 export default authRouter;
