@@ -67,10 +67,6 @@ export default function UpdateProduct() {
         }
     }
 
-    if (!getProductBySlug) {
-        return <p>Loading...</p>;
-    }
-
     return (
             <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 py-4 bg-slate-100 min-h-screen">
                 <DashboardAside setIsAuthenticated={setIsAuthenticated} />
@@ -101,7 +97,7 @@ export default function UpdateProduct() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500">Uploaded by</p>
-                                            <p className="font-medium">{getProductBySlug.author?.firstName} {getProductBySlug?.author?.lastName}</p>
+                                            <p className="font-medium">{getProductBySlug?.author?.firstName} {getProductBySlug?.author?.lastName}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500">Stock</p>
@@ -109,7 +105,7 @@ export default function UpdateProduct() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500">Category</p>
-                                            <p className="font-medium">{getProductBySlug.category?.name}</p>
+                                            <p className="font-medium">{getProductBySlug?.category?.name}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -130,7 +126,7 @@ export default function UpdateProduct() {
                                     </thead>
                                     <tbody>
                                         <tr className="border-t">
-                                            <td className="py-4 pl-4 whitespace-normal break-words">{getProductBySlug.name?.length > 25 ? `${getProductBySlug.name?.slice(0, 25)}...` : getProductBySlug?.name}</td>
+                                            <td className="py-4 pl-4 whitespace-normal break-words">{getProductBySlug?.name?.length > 25 ? `${getProductBySlug?.name?.slice(0, 25)}...` : getProductBySlug?.name}</td>
 
                                             <td className="p-4">
                                                 <img
@@ -140,9 +136,9 @@ export default function UpdateProduct() {
                                             </td>
 
                                             <td className="p-4">${getProductBySlug?.price}</td>
-                                            <td className="p-4">{getProductBySlug.author?.firstName} {getProductBySlug.author?.lastName}</td>
+                                            <td className="p-4">{getProductBySlug?.author?.firstName} {getProductBySlug?.author?.lastName}</td>
                                             <td className="p-4">{getProductBySlug?.stock}</td>
-                                            <td className="pr-2">{getProductBySlug.category?.name}</td>
+                                            <td className="pr-2">{getProductBySlug?.category?.name}</td>
                                         </tr>
                                     </tbody>
                                 </table>
