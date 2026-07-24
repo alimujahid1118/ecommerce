@@ -76,7 +76,7 @@ export default function AllProducts() {
     return (
         <>
         <h1 className="text-center font-bold text-2xl pt-2 text-[#132A36]">BROWSE PRODUCTS</h1>
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row items-start gap-6">
             {/* Desktop */}
                 {/* Filters */}
                 <aside className="hidden md:block md:w-72 shrink-0 px-4 py-6">
@@ -261,9 +261,9 @@ export default function AllProducts() {
                             </p>
                             
                             <div className="flex flex-col gap-2">
-                                <button className="w-full text-[#132A36] py-2 rounded-lg bg-white border-[1px] border-[#132A36]">
+                                <Link to={`/product/${product.slug}`} className="flex w-full text-[#132A36] py-2 justify-center rounded-lg bg-white border-[1px] border-[#132A36]">
                                     View details
-                                </button>
+                                </Link>
                                 <button className="w-full bg-[#132A36] border-[1px] py-2 rounded-lg text-white">
                                     Add to Cart
                                 </button>

@@ -111,25 +111,57 @@ export default function Header() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-row items-center justify-between px-6 sticky top-0 z-40 bg-white">
-                <div className="md:mt-2">
-                    <i onClick={() => setMenuOpen(true)} className="fi fi-rr-menu-burger text-3xl text-[#104185] hover:cursor-pointer"></i>
-                </div>
-                <Link to='/'>
-                    <img src="/web-logo.png" alt="E-Store website logo" className="w-36 h-24" />
-                </Link>
+            <div className="sticky top-0 z-40 bg-white shadow-sm">
+                {/* Top Row */}
+                <div className="flex items-center justify-between px-6 py-2">
+                    <div>
+                        <i
+                            onClick={() => setMenuOpen(true)}
+                            className="fi fi-rr-menu-burger text-3xl text-[#104185] hover:cursor-pointer"
+                        ></i>
+                    </div>
 
-                {/* Search Bar - Desktop */}
-                <div className="md:flex md:flex-row mt-2 md:items-center md:justify-center hidden">
-                    <input className="text-lg border-[1px] border-[#90acd3] py-2 pl-4 pr-52 rounded-l-md" type="text" placeholder="Search for products.." />
-                    <button className="bg-[#104185] border-[1px] border-slate-500 py-[10px] px-4 text-white rounded-r-md">
-                        <i className="fi fi-rr-search"></i>
-                    </button>
+                    <Link to="/">
+                        <img
+                            src="/web-logo.png"
+                            alt="E-Store website logo"
+                            className="w-36 h-24"
+                        />
+                    </Link>
+
+                    {/* Desktop Search */}
+                    <div className="hidden md:flex flex-1 max-w-xl mx-10">
+                        <input
+                            type="text"
+                            placeholder="Search for products..."
+                            className="w-full border border-[#90acd3] py-2 px-4 rounded-l-md"
+                        />
+                        <button className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
+                            <i className="fi fi-rr-search"></i>
+                        </button>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <i
+                            onClick={() => setProfileOpen(true)}
+                            className="fi fi-rr-user text-2xl text-[#104185] hover:cursor-pointer"
+                        ></i>
+                        <i className="fi fi-rr-shopping-cart text-2xl text-[#104185] hover:cursor-pointer"></i>
+                    </div>
                 </div>
 
-                <div className="flex flex-row gap-2 md:mt-2">
-                    <i onClick={() => setProfileOpen(true)} className="fi fi-rr-user text-2xl text-[#104185] hover:cursor-pointer"></i>
-                    <i className="fi fi-rr-shopping-cart text-2xl text-[#104185] hover:cursor-pointer"></i>
+                {/* Mobile Search */}
+                <div className="md:hidden px-4 pb-3">
+                    <div className="flex">
+                        <input
+                            type="text"
+                            placeholder="Search for products..."
+                            className="flex-1 border border-[#90acd3] py-2 px-3 rounded-l-md"
+                        />
+                        <button className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
+                            <i className="fi fi-rr-search"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             

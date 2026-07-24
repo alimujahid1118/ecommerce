@@ -8,12 +8,6 @@ export default function Homepage() {
 
     return (
         <>
-            {/* Search Bar - Mobile */}
-            <div className="flex flex-row items-center justify-center mt-2 md:hidden">
-                <input className="text-lg border-[1px] border-[#90acd3] py-2 pl-2 rounded-l-md" type="text" placeholder="Search for products.." />
-                <i className="fi fi-rr-search bg-[#104185] border-[1px] border-slate-500 py-[10px] px-2 text-white rounded-r-md"></i>
-            </div>
-
             {/* Categories */}
             
             <div className="overflow-x-auto scrollbar-hide">
@@ -93,9 +87,9 @@ export default function Homepage() {
                                     ${product.price}
                                 </p>
 
-                                <button className="w-full bg-[#132A36] py-2 rounded-lg text-white">
+                                <Link to={`/product/${product.slug}`} className="flex justify-center w-full bg-[#132A36] py-2 rounded-lg text-white">
                                     View details
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     ))}
