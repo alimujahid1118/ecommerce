@@ -23,16 +23,16 @@ export default function Dashboard () {
             <main className="flex flex-col md:w-3/4 px-6">
                 <div className="flex flex-col gap-3">
                     <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">Dashboard</h1>
-                    <p className="text-sm md:hidden text-[#104185] px-2">Welcome back {userData.firstName} Here is an overview of your account.</p>
+                    <p className="text-sm md:hidden text-[#104185] px-2">Welcome back {userData.firstName}. Here is an overview of your account.</p>
                     <Link className="md:hidden flex flex-row gap-2 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
                         <i className="fi fi-rr-cart-shopping-fast mt-[3px]"></i>
                         <p className="font-semibold">Continue Shopping</p>
                     </Link>
                     <div className="hidden md:flex md:flex-row md:items-center md:justify-between md:px-2">
-                        <p className="text-sm text-[#104185] px-2">Welcome back {userData.firstName} Here is an overview of your account.</p>
-                        <Link className="flex flex-row gap-2 px-6 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
+                        <p className="text-sm text-[#104185] px-2">Welcome back {userData.firstName}. Here is an overview of your account.</p>
+                        <Link to='/products' className="flex flex-row gap-2 px-6 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
                             <i className="fi fi-rr-cart-shopping-fast mt-[3px]"></i>
-                            <p className="font-semibold">Continue Shopping</p>
+                            <p className="font-semibold shrink-0">Continue Shopping</p>
                         </Link>
                     </div>
                 </div>

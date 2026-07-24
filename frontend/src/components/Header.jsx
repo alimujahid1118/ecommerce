@@ -143,9 +143,9 @@ export default function Header() {
                     <div className="flex flex-col px-10 gap-4 text-lg font-semibold">
                         {
                             category?.map((eachCategory)=> (
-                                <div key={eachCategory._id} className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
+                                <Link onClick={() => setMenuOpen(false)} to={`/products?category=${eachCategory.slug}`} key={eachCategory._id} className="py-4 border-b-[1px] border-slate-300 text-[#104185]">
                                     <p>{eachCategory.name}</p>
-                                </div>
+                                </Link>
                             ))
                         }
                     </div>

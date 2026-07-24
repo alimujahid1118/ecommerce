@@ -77,9 +77,8 @@ export default function AllProducts() {
         <>
         <h1 className="text-center font-bold text-2xl pt-2 text-[#132A36]">BROWSE PRODUCTS</h1>
         <div className="flex flex-col md:flex-row gap-6">
-            {/* Filters */}
             {/* Desktop */}
-                {/* Desktop Filters */}
+                {/* Filters */}
                 <aside className="hidden md:block md:w-72 shrink-0 px-4 py-6">
                     <div className="sticky top-24 flex flex-col gap-8 border rounded-lg shadow-lg p-5 bg-white">
 
@@ -227,7 +226,7 @@ export default function AllProducts() {
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex flex-row gap-2 justify-center">
+                            <div className="flex flex-row gap-4 justify-center">
                                 <Link to={filterUrl} onClick={() => setMenuOpen(false)} className="font-semibold text-[#132A36] underline">Apply filter</Link>
                                 <Link onClick={() => setFilter({sort: '', category: ''})} className="font-semibold text-[#132A36] underline">Reset filter</Link>
                             </div>

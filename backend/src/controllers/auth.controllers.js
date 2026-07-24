@@ -319,8 +319,11 @@ export async function getMe(req, res) {
 
             res.status(200).json({
                 user: {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     username: user.username,
-                    email: user.email
+                    email: user.email,
+                    createdAt: user.createdAt
                 }
             })
         } catch (error) {
@@ -436,9 +439,6 @@ export async function getCategory(req, res) {
 
 export async function getCategoryBySlug(req, res) {
     const accessToken = req.cookies.accessToken;
-
-    console.log(req.params);
-    console.log(req.params.slug);
 
     if (!accessToken) {
         return res.status(401).json({
@@ -668,7 +668,7 @@ export async function getProducts(req, res) {
             query = query.sort({ price: -1 });
         }
 
-        const products = await query;
+        const products = await query.populate("author", "firstName lastName").populate("category", "name")
 
         return res.status(200).json({
             success: true,
@@ -680,5 +680,42 @@ export async function getProducts(req, res) {
             success: false,
             message: "Internal Server Error",
         });
+    }
+}
+
+export async function getProductBySlug(req, res) {
+    const { slug } = req.params;
+    res.json(slug)
+    console.log(slug)
+}
+
+export async function deleteProduct(req, res) {
+
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: 'Invalid Token.'
+        })
+    }
+
+    try {
+
+        const { slug } = req.params
+
+        await productModel.findOneAndDelete({ slug: slug })
+        return res.status(200).json({
+            message: "Product deleted successfully."
+        })
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Token Expired."
+            })
+        } else {
+            return res.status(401).json({
+                message: 'Invalid Token.'
+            })
+        }
     }
 }

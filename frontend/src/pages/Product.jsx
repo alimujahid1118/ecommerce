@@ -1,4 +1,4 @@
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
@@ -56,6 +56,18 @@ export default function Product () {
 
     if (!isAuthenticated) {
         return <Navigate to='/' replace />;
+    }
+
+    const handleLogout = async (slug) => {
+        try {
+            await api.delete(`/auth/delete-product/${slug}`)
+            setGetProducts((prev) => prev.filter(
+                (product) => product.slug !== slug
+            ))
+        } catch (error) {
+            console.log(error)
+        }
+
     }
 
     return (
@@ -157,9 +169,9 @@ export default function Product () {
                                         </td>
 
                                         <td className="text-center">
-                                            <button className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                            <Link onClick={() => handleLogout(product.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                                 Delete
-                                            </button>
+                                            </Link>
                                         </td>
                                     </tr>
                                 </tbody>

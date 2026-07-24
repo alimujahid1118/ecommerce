@@ -56,4 +56,8 @@ authRouter.post('/auth/create-product', upload.single("image"), authController.c
 
 authRouter.get('/auth/get-products', authController.getProducts)
 
+// DELETE /api/auth/delete-product/slug
+
+authRouter.delete('/auth/delete-product/:slug', authController.deleteProduct)
+
 export default authRouter;

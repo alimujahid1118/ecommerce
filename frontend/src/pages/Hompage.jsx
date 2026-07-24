@@ -20,10 +20,10 @@ export default function Homepage() {
                 <div className="py-6 flex flex-row min-w-max justify-center gap-6 px-3">
                     {
                         category?.map((eachCategory) => (
-                            <div key={eachCategory._id} className="flex flex-col items-center gap-1">
+                            <Link to={`/products?category=${eachCategory.slug}`} key={eachCategory._id} className="flex flex-col items-center gap-1">
                                 <img src={eachCategory.imageUrl} alt="" className="border-[1px] border-slate-300 w-24 h-20 md:w-32 md:h-24 object-cover rounded-lg"/>
                                 <p className="text-xs font-semibold">{eachCategory.name}</p>
-                            </div>
+                            </Link>
                         ))
                     }
                 </div>
