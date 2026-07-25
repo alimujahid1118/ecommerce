@@ -71,7 +71,7 @@ export default function Homepage() {
                             <img
                                 src={product.imageUrl}
                                 alt={product.name}
-                                className="w-40 h-40 object-contain"
+                                className="w-60 h-48 object-cover rounded-lg"
                             />
 
                             <p

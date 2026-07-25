@@ -92,7 +92,7 @@ export default function Product () {
                                     <p className="text-xs text-slate-500">Image</p>
                                     <img
                                         src={product.imageUrl}
-                                        className="w-20 h-20 object-cover rounded"
+                                        className="w-60 h-48 object-cover rounded-lg"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 pb-2">
@@ -153,7 +153,7 @@ export default function Product () {
                                         <td className="p-4">
                                             <img
                                                 src={product.imageUrl}
-                                                className="w-16 h-16 rounded object-cover"
+                                                className="w-60 h-48 object-cover rounded-lg"
                                             />
                                         </td>
 

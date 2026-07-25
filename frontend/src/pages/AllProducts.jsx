@@ -75,7 +75,7 @@ export default function AllProducts() {
 
     return (
         <>
-        <h1 className="text-center font-bold text-2xl pt-2 text-[#132A36]">BROWSE PRODUCTS</h1>
+        <h1 className="text-center font-bold text-2xl pt-6 text-[#132A36]">BROWSE PRODUCTS</h1>
         <div className="flex flex-col md:flex-row items-start gap-6">
             {/* Desktop */}
                 {/* Filters */}
@@ -189,9 +189,9 @@ export default function AllProducts() {
                 </aside>
 
             {/* Mobile */}
-            <button onClick={() => setMenuOpen(true)} className="flex flex-row justify-end pr-8 gap-2 md:hidden">
-                <p className="text-[#132A36] font-semibold">Filters</p>
-                <i className="fi fi-rr-filter mt-[2px] text-[#104185]"></i>
+            <button onClick={() => setMenuOpen(true)} className="flex w-full justify-end pr-8 pt-4 gap-2 md:hidden">
+                <p className="text-[#132A36] font-semibold text-lg">Filters</p>
+                <i className="fi fi-rr-filter mt-[3px] text-[#104185]"></i>
             </button>
 
             {/* Filters */}
@@ -245,7 +245,7 @@ export default function AllProducts() {
                         <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="w-40 h-40 object-contain"
+                            className="w-60 h-48 object-cover rounded-lg"
                         />
 
                         <p
