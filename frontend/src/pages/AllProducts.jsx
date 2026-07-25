@@ -9,18 +9,29 @@ export default function AllProducts() {
     const { getProducts, category } = useAppContext();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchParams] = useSearchParams();
+
     const paramsCategory = searchParams.get("category")
     const paramsSort = searchParams.get("sort")
+    const paramsName = searchParams.get("search")
+
     const [filter, setFilter] = useState({
         category: paramsCategory || "",
-        sort: paramsSort || "",
+        sort: paramsSort || ""
     });
     
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
+        setFilter({
+            category: paramsCategory || "",
+            sort: paramsSort || "",
+        });
+    }, [paramsCategory, paramsSort]);
+
+    useEffect(() => {
         const fetchFilteredProducts = async () => {
-            if (!paramsCategory && !paramsSort) {
+            // No filters or search -> use products from context
+            if (!paramsCategory && !paramsSort && !paramsName) {
                 setProducts(getProducts);
                 return;
             }
@@ -30,8 +41,10 @@ export default function AllProducts() {
                     params: {
                         category: paramsCategory,
                         sort: paramsSort,
+                        search: paramsName,
                     },
                 });
+
                 setProducts(response.data.products);
             } catch (error) {
                 console.log(error);
@@ -39,7 +52,7 @@ export default function AllProducts() {
         };
 
         fetchFilteredProducts();
-    }, [paramsCategory, paramsSort, getProducts]);
+    }, [paramsCategory, paramsSort, paramsName, getProducts]);
 
     useEffect(() => {
             const isDesktop = window.innerWidth >= 768; // md breakpoint
@@ -56,21 +69,22 @@ export default function AllProducts() {
         }, [menuOpen]);
 
     const filterUrl = (() => {
-        if (filter.category && filter.sort) {
-            return `/products?category=${filter.category}&sort=${filter.sort}`;
-        }
+        const params = new URLSearchParams();
 
         if (filter.category) {
-            return `/products?category=${filter.category}`;
+            params.set("category", filter.category);
         }
 
         if (filter.sort) {
-            return `/products?sort=${filter.sort}`;
+            params.set("sort", filter.sort);
         }
 
-        if (!filter.category && !filter.sort) {
-            return "/products";
+        // Preserve the search term
+        if (paramsName) {
+            params.set("search", paramsName);
         }
+
+        return `/products${params.toString() ? `?${params.toString()}` : ""}`;
     })();
 
     return (
@@ -228,7 +242,19 @@ export default function AllProducts() {
                             </div>
                             <div className="flex flex-row gap-4 justify-center">
                                 <Link to={filterUrl} onClick={() => setMenuOpen(false)} className="font-semibold text-[#132A36] underline">Apply filter</Link>
-                                <Link onClick={() => setFilter({sort: '', category: ''})} className="font-semibold text-[#132A36] underline">Reset filter</Link>
+                                <Link
+                                    to="/products"
+                                    onClick={() => {
+                                        setFilter({
+                                            category: "",
+                                            sort: "",
+                                        });
+                                        setMenuOpen(false);
+                                    }}
+                                    className="font-semibold text-[#132A36] underline"
+                                >
+                                    Reset Filter
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -236,6 +262,13 @@ export default function AllProducts() {
             }
 
             {/* Products */}
+            {products.length === 0 ? (
+                <div className="w-full flex justify-center items-center pt-24 pb-36 md:flex-1 md:py-44">
+                    <p className="text-xl text-[#132A36]">
+                        No products found.
+                    </p>
+                </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full md:py-14 px-2">
                 {products?.map((product) => (
                     <div
@@ -272,6 +305,7 @@ export default function AllProducts() {
                     </div>
                 ))}
             </div>
+            )}
         </div>
         </>
     )

@@ -641,7 +641,7 @@ export async function createProduct(req, res) {
 }
 
 export async function getProducts(req, res) {
-    const { category, sort } = req.query;
+    const { category, sort, search } = req.query;
     try {
         const filter = {};
 
@@ -656,6 +656,13 @@ export async function getProducts(req, res) {
             }
 
             filter.category = categoryDoc._id;
+        }
+
+        if (search) {
+            filter.name = {
+                $regex: search,
+                $options: "i"
+            }
         }
 
         let query = productModel.find(filter);

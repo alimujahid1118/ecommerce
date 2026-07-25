@@ -10,6 +10,7 @@ export default function Header() {
         'email' : '',
         'password' : ''
     })
+    const [ searchValue, setSearchValue ] = useState("")
     const [successMessage, setSuccessMessage] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
@@ -82,6 +83,18 @@ export default function Header() {
         }
     }
 
+    const handleSearch = async () => {
+        try {
+            if (searchValue) {
+                navigate(`/products?search=${searchValue}`);
+            } else {
+                navigate('/products')
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return(
         <>
             <div className="flex flex-row w-full bg-[#132A36] px-6 py-1 md:py-3 text-white justify-between">
@@ -133,10 +146,17 @@ export default function Header() {
                     <div className="hidden md:flex flex-1 max-w-xl mx-10">
                         <input
                             type="text"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
                             placeholder="Search for products..."
                             className="w-full border border-[#90acd3] py-2 px-4 rounded-l-md"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    handleSearch();
+                                }
+                            }}
                         />
-                        <button className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
+                        <button onClick={handleSearch} className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
                             <i className="fi fi-rr-search"></i>
                         </button>
                     </div>
@@ -155,10 +175,17 @@ export default function Header() {
                     <div className="flex">
                         <input
                             type="text"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    handleSearch();
+                                }
+                            }}
                             placeholder="Search for products..."
                             className="flex-1 border border-[#90acd3] py-2 px-3 rounded-l-md"
                         />
-                        <button className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
+                        <button onClick={handleSearch} className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
                             <i className="fi fi-rr-search"></i>
                         </button>
                     </div>
