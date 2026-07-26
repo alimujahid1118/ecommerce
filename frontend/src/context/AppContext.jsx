@@ -8,10 +8,11 @@ export function AppProvider({ children }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const [category, setCategory] = useState([])
-    const [getProducts, setGetProducts] = useState([])
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+    const [totalPages, setTotalPages] = useState(null)
 
     const [userData, setUserData] = useState({
         firstName: "",
@@ -60,19 +61,6 @@ export function AppProvider({ children }) {
             getCategory()
         }, [])
 
-    useEffect(() => {
-        const getAllProducts = async () => {
-            try {
-                const response = await api.get("/auth/get-products");
-                setGetProducts(response.data.products);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        getAllProducts();
-    }, []);
-
     return (
         <AppContext.Provider
             value={{
@@ -95,8 +83,8 @@ export function AppProvider({ children }) {
 
                 isAuthLoading,
 
-                getProducts,
-                setGetProducts
+                totalPages,
+                setTotalPages,
             }}
         >
             {children}

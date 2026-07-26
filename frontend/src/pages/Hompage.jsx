@@ -1,10 +1,31 @@
+import { useEffect, useState } from "react";
 import discountBanner from "../assets/discount-banner.png";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom"
+import api from "../api/axios";
 
 export default function Homepage() {
 
-    const { category, getProducts } = useAppContext();
+    const { category } = useAppContext();
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await api.get("/auth/get-products", {
+                    params: {
+                        limit: 4,
+                    },
+                });
+
+                setProducts(response.data.products);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     return (
         <>
@@ -63,7 +84,7 @@ export default function Homepage() {
                     <Link to="/products" className="text-xs md:absolute md:right-10 md:text-md md:font-semibold md:justify-end px-4 py-2 border-[1px] border-[#132A36] rounded-lg">All Products</Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 py-6 w-full">
-                    {getProducts?.map((product) => (
+                    {products?.map((product) => (
                         <div
                             key={product._id}
                             className="flex flex-col gap-2 items-center p-4 border shadow-lg rounded-lg h-full"

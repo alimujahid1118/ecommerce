@@ -6,13 +6,14 @@ import api from "../api/axios";
 
 export default function AllProducts() {
 
-    const { getProducts, category } = useAppContext();
+    const { category, totalPages, setTotalPages } = useAppContext();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchParams] = useSearchParams();
 
     const paramsCategory = searchParams.get("category")
     const paramsSort = searchParams.get("sort")
     const paramsName = searchParams.get("search")
+    const paramsPage = Number(searchParams.get("page")) || 1;
 
     const [filter, setFilter] = useState({
         category: paramsCategory || "",
@@ -30,11 +31,6 @@ export default function AllProducts() {
 
     useEffect(() => {
         const fetchFilteredProducts = async () => {
-            // No filters or search -> use products from context
-            if (!paramsCategory && !paramsSort && !paramsName) {
-                setProducts(getProducts);
-                return;
-            }
 
             try {
                 const response = await api.get("/auth/get-products", {
@@ -42,17 +38,20 @@ export default function AllProducts() {
                         category: paramsCategory,
                         sort: paramsSort,
                         search: paramsName,
+                        page: paramsPage,
+                        limit: 3
                     },
                 });
 
                 setProducts(response.data.products);
+                setTotalPages(response.data.totalPages)
             } catch (error) {
                 console.log(error);
             }
         };
 
         fetchFilteredProducts();
-    }, [paramsCategory, paramsSort, paramsName, getProducts]);
+    }, [paramsCategory, paramsSort, paramsName, paramsPage]);
 
     useEffect(() => {
             const isDesktop = window.innerWidth >= 768; // md breakpoint
@@ -86,6 +85,17 @@ export default function AllProducts() {
 
         return `/products${params.toString() ? `?${params.toString()}` : ""}`;
     })();
+
+    const pageNumbers = Array.from(
+        { length: totalPages || 0 },
+        (_, index) => index + 1
+    );
+
+    const prevParams = new URLSearchParams(searchParams);
+    prevParams.set("page", Math.max(paramsPage - 1, 1));
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set("page", Math.min(paramsPage + 1, totalPages));
 
     return (
         <>
@@ -269,7 +279,54 @@ export default function AllProducts() {
                     </p>
                 </div>
             ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full md:py-14 px-2">
+            <div className="flex-1 w-full">
+                <div className="flex justify-center items-center gap-4 py-6 md:pt-10 md:pb-6">
+                    {paramsPage === 1 ? (
+                        <span className="px-3 py-1 rounded-lg bg-gray-300 cursor-not-allowed">
+                            Previous
+                        </span>
+                    ) : (
+                        <Link
+                            to={`/products?${prevParams.toString()}`}
+                            className="px-3 py-1 rounded-lg bg-[#132A36] text-white"
+                        >
+                            Previous
+                        </Link>
+                    )}
+
+                <div className="flex items-center gap-2">
+                    {pageNumbers.map((page) => {
+                        const params = new URLSearchParams(searchParams);
+                        params.set("page", page);
+                        return(
+                        <Link
+                            to={`/products?${params.toString()}`}
+                            key={page}
+                            className={`flex w-8 h-8 items-center justify-center rounded-lg ${
+                                paramsPage === page
+                                    ? "bg-[#132A36] text-white"
+                                    : "border border-[#132A36] text-[#132A36]"
+                            }`}
+                        >
+                            {page}
+                        </Link>)
+                })}
+                </div>
+
+                {paramsPage === totalPages ? (
+                    <span className="px-4 py-1 rounded-lg bg-gray-300 cursor-not-allowed">
+                        Next
+                    </span>
+                ) : (
+                    <Link
+                        to={`/products?${nextParams.toString()}`}
+                        className="px-4 py-1 rounded-lg bg-[#132A36] text-white"
+                    >
+                        Next
+                    </Link>
+                )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:py-8 px-2">
                 {products?.map((product) => (
                     <div
                         key={product._id}
@@ -304,6 +361,7 @@ export default function AllProducts() {
                         </div>
                     </div>
                 ))}
+            </div>
             </div>
             )}
         </div>

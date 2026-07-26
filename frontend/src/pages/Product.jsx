@@ -153,7 +153,7 @@ export default function Product () {
                                         <td className="p-4">
                                             <img
                                                 src={product.imageUrl}
-                                                className="w-60 h-48 object-cover rounded-lg"
+                                                className="w-20 h-20 object-cover rounded-lg"
                                             />
                                         </td>
 

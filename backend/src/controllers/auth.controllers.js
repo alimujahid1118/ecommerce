@@ -642,6 +642,9 @@ export async function createProduct(req, res) {
 
 export async function getProducts(req, res) {
     const { category, sort, search } = req.query;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+
     try {
         const filter = {};
 
@@ -661,9 +664,11 @@ export async function getProducts(req, res) {
         if (search) {
             filter.name = {
                 $regex: search,
-                $options: "i"
-            }
+                $options: "i",
+            };
         }
+
+        const skip = (page - 1) * limit;
 
         let query = productModel.find(filter);
 
@@ -675,14 +680,25 @@ export async function getProducts(req, res) {
             query = query.sort({ price: -1 });
         }
 
-        const products = await query.populate("author", "firstName lastName").populate("category", "name")
+        const totalProducts = await productModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        const products = await query
+            .skip(skip)
+            .limit(limit)
+            .populate("author", "firstName lastName")
+            .populate("category", "name");
 
         return res.status(200).json({
             success: true,
             products,
+            totalProducts,
+            totalPages,
+            currentPage: page,
         });
     } catch (error) {
-        console.error(error)
+        console.error(error);
+
         return res.status(500).json({
             success: false,
             message: "Internal Server Error",
