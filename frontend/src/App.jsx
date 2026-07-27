@@ -17,25 +17,27 @@ import Cart from "./pages/Cart";
 
 function App() {
     return (
-        <>
+        <div className="min-h-screen flex flex-col">
             <Header />
 
-            <Routes>
-                <Route path="/" element={<Homepage />} />
-                <Route path="/accounts/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/dashboard/category" element={<Category />} />
-                <Route path="/dashboard/update-category/:slug" element={<UpdateCategory />} />
-                <Route path="/dashboard/product" element={<Product />} />
-                <Route path="/products" element={<AllProducts />} />
-                <Route path="/dashboard/update-product/:slug" element={<UpdateProduct />} />
-                <Route path="/product/:slug" element={<ProductDetails />} />
-                <Route path="/cart" element={<Cart />} />
-            </Routes>
+            <main className="flex-1">
+                <Routes>
+                    <Route path="/" element={<Homepage />} />
+                    <Route path="/accounts/register" element={<Register />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
+                    <Route path="/dashboard/category" element={<Category />} />
+                    <Route path="/dashboard/update-category/:slug" element={<UpdateCategory />} />
+                    <Route path="/dashboard/product" element={<Product />} />
+                    <Route path="/products" element={<AllProducts />} />
+                    <Route path="/dashboard/update-product/:slug" element={<UpdateProduct />} />
+                    <Route path="/product/:slug" element={<ProductDetails />} />
+                    <Route path="/cart" element={<Cart />} />
+                </Routes>
+            </main>
 
             <Footer />
-        </>
+        </div>
     );
 }
 
