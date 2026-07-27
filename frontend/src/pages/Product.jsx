@@ -70,10 +70,6 @@ export default function Product () {
 
     }
 
-    if (!isAuthenticated) {
-        return <Navigate to='/' replace />;
-    }
-
     const handleLogout = async (slug) => {
         try {
             await api.delete(`/auth/delete-product/${slug}`)
@@ -88,6 +84,10 @@ export default function Product () {
 
     if (isAuthLoading) {
         return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to='/' replace />;
     }
 
     return (
