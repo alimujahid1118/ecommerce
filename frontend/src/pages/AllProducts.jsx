@@ -21,6 +21,7 @@ export default function AllProducts() {
     });
     
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setFilter({
@@ -30,6 +31,7 @@ export default function AllProducts() {
     }, [paramsCategory, paramsSort]);
 
     useEffect(() => {
+        setLoading(true);
         const fetchFilteredProducts = async () => {
 
             try {
@@ -47,6 +49,8 @@ export default function AllProducts() {
                 setTotalPages(response.data.totalPages)
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -272,13 +276,39 @@ export default function AllProducts() {
             }
 
             {/* Products */}
-            {products.length === 0 ? (
-                <div className="w-full flex justify-center items-center pt-24 pb-36 md:flex-1 md:py-44">
-                    <p className="text-xl text-[#132A36]">
-                        No products found.
-                    </p>
+                {loading ? (
+                <div className="flex-1 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:py-8 px-2">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="flex flex-col gap-2 p-4 border shadow-lg rounded-lg animate-pulse"
+                            >
+                                {/* Image */}
+                                <div className="w-60 h-48 bg-gray-200 rounded-lg mx-auto" />
+
+                                {/* Product name */}
+                                <div className="mt-3 h-5 w-48 bg-gray-200 rounded mx-auto" />
+
+                                {/* Price */}
+                                <div className="h-5 w-20 bg-gray-200 rounded mx-auto" />
+
+                                {/* Buttons */}
+                                <div className="mt-auto flex flex-col gap-2">
+                                    <div className="h-10 w-full bg-gray-200 rounded-lg" />
+                                    <div className="h-10 w-full bg-gray-200 rounded-lg" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            ) : (
+                ) : products.length === 0 ? (
+                    <div className="w-full flex justify-center items-center pt-24 pb-36 md:flex-1 md:py-44">
+                        <p className="text-xl text-[#132A36]">
+                            No products found.
+                        </p>
+                    </div>
+                ) : (
             <div className="flex-1 w-full">
                 <div className="flex justify-center items-center gap-4 py-6 md:pt-10 md:pb-6">
                     {paramsPage === 1 ? (
