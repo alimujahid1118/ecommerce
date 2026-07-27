@@ -34,12 +34,22 @@ export default function Homepage() {
             <div className="overflow-x-auto scrollbar-hide">
                 <div className="py-6 flex flex-row min-w-max justify-center gap-6 px-3">
                     {
-                        category?.map((eachCategory) => (
+                        category.length === 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="h-80 rounded-lg bg-gray-200 animate-pulse"
+                                    />
+                                ))}
+                            </div>
+                        )
+                        :(category?.map((eachCategory) => (
                             <Link to={`/products?category=${eachCategory.slug}`} key={eachCategory._id} className="flex flex-col items-center gap-1">
                                 <img src={eachCategory.imageUrl} alt="" className="border-[1px] border-slate-300 w-24 h-20 md:w-32 md:h-24 object-cover rounded-lg"/>
                                 <p className="text-xs font-semibold">{eachCategory.name}</p>
                             </Link>
-                        ))
+                        )))
                     }
                 </div>
             </div>
