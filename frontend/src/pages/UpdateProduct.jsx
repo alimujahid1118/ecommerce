@@ -9,6 +9,7 @@ export default function UpdateProduct() {
 
     const { isAuthLoading, isAuthenticated, setIsAuthenticated, category } = useAppContext();
     const [ getProductBySlug, setGetProductBySlug] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [updateProduct, setUpdateProduct] = useState({
         name: "",
         image: null,
@@ -20,11 +21,14 @@ export default function UpdateProduct() {
 
     useEffect(() => {
         const getProduct = async () => {
+            setLoading(true);
             try {
                 const response = await api.get(`/auth/get-product/${slug}`)
                 setGetProductBySlug(response.data)
             } catch (error) {
                 console.log(error)
+            } finally {
+                setLoading(false)
             }
         }
 
@@ -84,6 +88,33 @@ export default function UpdateProduct() {
                             <p className="text-sm text-[#104185] px-2 md:px-4">You can Update product on this page.</p>
                         </div>
                         {/* Mobile */}
+
+                        {loading ? (
+                            <div className="md:hidden flex flex-col gap-4 mt-6 px-6 animate-pulse">
+                                <div className="bg-white border rounded-lg py-4 px-8 space-y-4">
+
+                                    <div>
+                                        <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                        <div className="h-5 w-40 bg-gray-200 rounded"></div>
+                                    </div>
+
+                                    <div>
+                                        <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                        <div className="w-20 h-20 bg-gray-200 rounded"></div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {Array.from({ length: 4 }).map((_, i) => (
+                                            <div key={i}>
+                                                <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                                <div className="h-4 w-20 bg-gray-200 rounded"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                </div>
+                            </div>
+                        ) : (
                             <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
                                 <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
                                     <div>
@@ -118,6 +149,7 @@ export default function UpdateProduct() {
                                     </div>
                                 </div>
                             </div>
+                        )}
 
                     {/* Desktop */}
                             <div className="hidden md:block px-6 mt-6">
@@ -133,6 +165,33 @@ export default function UpdateProduct() {
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {loading ? (
+                                            <tr className="animate-pulse border-t">
+                                                <td className="p-4">
+                                                    <div className="h-4 w-40 bg-gray-200 rounded"></div>
+                                                </td>
+
+                                                <td className="p-4">
+                                                    <div className="w-16 h-16 bg-gray-200 rounded"></div>
+                                                </td>
+
+                                                <td className="p-4">
+                                                    <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                                                </td>
+
+                                                <td className="p-4">
+                                                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                                                </td>
+
+                                                <td className="p-4">
+                                                    <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                                                </td>
+
+                                                <td className="p-4">
+                                                    <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                                                </td>
+                                            </tr>
+                                        ) : (
                                         <tr className="border-t">
                                             <td className="py-4 pl-4 whitespace-normal break-words">{getProductBySlug?.name?.length > 25 ? `${getProductBySlug?.name?.slice(0, 25)}...` : getProductBySlug?.name}</td>
 
@@ -148,6 +207,7 @@ export default function UpdateProduct() {
                                             <td className="p-4">{getProductBySlug?.stock}</td>
                                             <td className="pr-2">{getProductBySlug?.category?.name}</td>
                                         </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
