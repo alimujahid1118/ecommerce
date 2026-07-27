@@ -13,6 +13,7 @@ import Product from "./pages/Product";
 import AllProducts from "./pages/AllProducts";
 import UpdateProduct from "./pages/UpdateProduct";
 import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
 
 function App() {
     return (
@@ -30,6 +31,7 @@ function App() {
                 <Route path="/products" element={<AllProducts />} />
                 <Route path="/dashboard/update-product/:slug" element={<UpdateProduct />} />
                 <Route path="/product/:slug" element={<ProductDetails />} />
+                <Route path="/cart" element={<Cart />} />
             </Routes>
 
             <Footer />

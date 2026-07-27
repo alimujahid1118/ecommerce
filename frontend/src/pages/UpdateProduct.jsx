@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import DashboardAside from "../components/DashboardAside"
 import { useAppContext } from "../context/AppContext"
 import { useEffect } from "react";
@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export default function UpdateProduct() {
 
-    const { setIsAuthenticated, category } = useAppContext();
+    const { isAuthLoading, isAuthenticated, setIsAuthenticated, category } = useAppContext();
     const [ getProductBySlug, setGetProductBySlug] = useState(null);
     const [updateProduct, setUpdateProduct] = useState({
         name: "",
@@ -65,6 +65,14 @@ export default function UpdateProduct() {
         } catch (error) {
             console.log(error)
         }
+    }
+
+    if (isAuthLoading) {
+        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to='/' replace />;
     }
 
     return (

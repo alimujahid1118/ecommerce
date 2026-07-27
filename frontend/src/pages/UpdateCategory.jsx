@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 import { useState, useEffect } from "react";
@@ -6,7 +6,7 @@ import api from "../api/axios";
 
 export default function UpdateCategory() {
 
-    const { setIsAuthenticated, setCategory } = useAppContext();
+    const { isAuthLoading, isAuthenticated, setIsAuthenticated, setCategory } = useAppContext();
     const [ categoryBySlug, setCategoryBySlug ] = useState(null)
     const [ updateCategoryBySlug, setUpdateCategoryBySlug ] = useState({
         'name' : categoryBySlug?.name,
@@ -26,7 +26,7 @@ export default function UpdateCategory() {
         }
 
         getCategorySlug();
-    }, [])
+    }, [slug])
 
     const handleSubmit = async(e) => {
         e.preventDefault();
@@ -54,6 +54,16 @@ export default function UpdateCategory() {
             console.log(error)
         }
     };
+
+    if (isAuthLoading) {
+        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <Navigate to='/' replace />
+        )
+    }
 
     return (
         <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 py-4 bg-slate-100 min-h-screen">

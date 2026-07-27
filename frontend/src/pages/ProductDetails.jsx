@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import api from "../api/axios.js"
 
 export default function ProductDetails() {
@@ -21,8 +21,6 @@ export default function ProductDetails() {
         getProduct();
     }, [slug])
 
-
-
     return (
         <div className="flex flex-col p-4 md:gap-12">
             <div className="flex flex-col md:flex-row md:w-full items-center justify-center px-4 md:px-20 py-6 gap-8">
@@ -43,7 +41,7 @@ export default function ProductDetails() {
                             <i className="fi fi-rr-shopping-cart-add mt-[3px]"></i>
                         </div>
                         <div className="flex flex-row gap-2 text-[#132A36] border-[1px] border-[#132A36] bg-white justify-center px-4 py-2 w-full max-w-52 rounded-lg">
-                            <button className="font-semibold">VIEW CART</button>
+                            <Link to="/cart" className="font-semibold">VIEW CART</Link>
                             <i className="fi fi-rr-eye mt-[3px]"></i>
                         </div>
                     </div>
