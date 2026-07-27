@@ -2,10 +2,18 @@ import { Link, Navigate } from "react-router-dom";
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
+import { useEffect, useState } from "react";
 
 export default function Category () {
 
     const { isAuthenticated, setIsAuthenticated, categoryData, setCategoryData, category, setCategory, isAuthLoading } = useAppContext();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (category.length > 0) {
+            setLoading(false);
+        }
+    }, [category]);
 
     if (isAuthLoading) {
         return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
@@ -55,6 +63,31 @@ export default function Category () {
                     <p className="text-sm text-[#104185] px-2 md:px-4">You can create, update and delete categories on this page.</p>
                 </div>
                 {/* Mobile */}
+                {loading ? (
+                    <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="bg-white border rounded-lg py-4 px-8 space-y-4 animate-pulse"
+                            >
+                                <div>
+                                    <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                    <div className="h-5 w-40 bg-gray-200 rounded"></div>
+                                </div>
+
+                                <div>
+                                    <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                    <div className="w-20 h-20 bg-gray-200 rounded"></div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                    <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
                 <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
                     {
                         category.map((eachCategory) => (
@@ -85,7 +118,7 @@ export default function Category () {
                         ))
                     }
                 </div>
-
+                )}
                 {/* Desktop */}
                 <div className="hidden md:block px-6 mt-6">
                     <table className="w-full table-fixed right-0 bg-white border border-slate-300">
@@ -99,7 +132,28 @@ export default function Category () {
                         </thead>
 
                         <tbody>
-                            {
+                            {loading
+                                ? Array.from({ length: 5 }).map((_, i) => (
+                                    <tr key={i} className="border-t animate-pulse">
+                                        <td className="p-4">
+                                            <div className="h-4 w-40 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="w-16 h-16 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="text-center">
+                                            <div className="inline-block h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                        </td>
+
+                                        <td className="text-center">
+                                            <div className="inline-block h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                        </td>
+                                    </tr>
+                                ))
+                                :
+                            (
                                 category.map((eachCategory) => (
                                     <tr key={eachCategory._id} className="border-t">
                                         <td className="p-4">{eachCategory.name}</td>
@@ -124,7 +178,7 @@ export default function Category () {
                                         </td>
                                     </tr>
                                 ))
-                            }
+                            )}
                         </tbody>
                     </table>
                 </div>
