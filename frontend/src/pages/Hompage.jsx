@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import discountBanner from "../assets/discount-banner.png";
+import discountBanner from "../assets/discount-banner.webp";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom"
 import api from "../api/axios";
@@ -46,7 +46,7 @@ export default function Homepage() {
 
             {/* Sponsored - Banner Image */}
             <div className="flex flex-col items-center px-10">
-                <img src={discountBanner} alt="discount-banner" className="w-auto mx-6 rounded-lg"/>
+                <img src={discountBanner} alt="discount-banner" className="w-auto max-w-[1440px] mx-6 rounded-lg"/>
             </div>
 
             {/* Store features */}
