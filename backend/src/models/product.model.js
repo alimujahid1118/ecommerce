@@ -3,11 +3,13 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema({
     'name': {
         type: String,
-        required: [true, "Product Name is a required field."]
+        required: [true, "Product Name is a required field."],
+        unique: [true, "Product Name is a unique field."]
     },
     'slug': {
         type: String,
-        required: [true, "Product Slug is a required field."]
+        required: [true, "Product Slug is a required field."],
+        unique: [true, "Product Slug is a unique field."]
     },
     'imageUrl': {
         type: String,
