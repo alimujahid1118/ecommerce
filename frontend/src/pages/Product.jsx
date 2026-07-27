@@ -6,7 +6,8 @@ import { useState } from "react";
 
 export default function Product () {
 
-    const { isAuthenticated, setIsAuthenticated, isAuthLoading, category, getProducts, setGetProducts } = useAppContext();
+    const { isAuthenticated, setIsAuthenticated, isAuthLoading, category } = useAppContext();
+    const [getProducts, setGetProducts] = useState([])
     const [createProduct, setCreateProduct] = useState({
         'name': '',
         'image': null,
