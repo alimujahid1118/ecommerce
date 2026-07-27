@@ -9,6 +9,7 @@ export default function Product () {
 
     const { isAuthenticated, setIsAuthenticated, isAuthLoading, category } = useAppContext();
     const [getProducts, setGetProducts] = useState([])
+    const [loading, setLoading] = useState(true);
     const [createProduct, setCreateProduct] = useState({
         'name': '',
         'image': null,
@@ -19,12 +20,15 @@ export default function Product () {
 
     useEffect(() => {
         const fetchProducts = async () => {
+            setLoading(true)
             try {
                 const response = await api.get("/auth/get-products");
 
                 setGetProducts(response.data.products);
             } catch (error) {
                 console.log(error);
+            } finally {
+                setLoading(false)
             }
         };
 
@@ -66,10 +70,6 @@ export default function Product () {
 
     }
 
-    if (isAuthLoading) {
-        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
-    }
-
     if (!isAuthenticated) {
         return <Navigate to='/' replace />;
     }
@@ -86,6 +86,10 @@ export default function Product () {
 
     }
 
+    if (isAuthLoading) {
+        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
+    }
+
     return (
         <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 py-4 bg-slate-100 min-h-screen">
             <DashboardAside setIsAuthenticated={setIsAuthenticated} />
@@ -94,8 +98,35 @@ export default function Product () {
                     <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">MANAGE PRODUCTS</h1>
                     <p className="text-sm text-[#104185] px-2 md:px-4">You can create, update and delete categories on this page.</p>
                 </div>
-                {/* Mobile */}
-                {
+                {/* Mobile */}  
+                {loading
+                    ? Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="md:hidden flex flex-col gap-4 mt-6 px-6 animate-pulse">
+                            <div className="bg-white border rounded-lg py-4 px-8 space-y-4">
+
+                                <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                                <div className="h-5 w-48 bg-gray-200 rounded"></div>
+
+                                <div className="w-60 h-48 bg-gray-200 rounded-lg"></div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    {Array.from({ length: 4 }).map((_, j) => (
+                                        <div key={j} className="space-y-2">
+                                            <div className="h-3 w-16 bg-gray-200 rounded"></div>
+                                            <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                    <div className="h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    ))
+                    :
                     getProducts?.map((product) => (
                         <div key={product._id} className="md:hidden flex flex-col gap-4 mt-6 px-6">
                             <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
@@ -160,7 +191,43 @@ export default function Product () {
                                         <th className="p-4 text-center w-1/4">Delete</th>
                                     </tr>
                                 </thead>
-                            {
+                                {loading
+                                ? Array.from({ length: 5 }).map((_, i) => (
+                                    <tr key={i} className="border-t animate-pulse">
+                                        <td className="p-4">
+                                            <div className="h-4 w-40 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="w-20 h-20 bg-gray-200 rounded-lg"></div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="h-4 w-16 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="h-4 w-28 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="p-4">
+                                            <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                                        </td>
+
+                                        <td className="text-center">
+                                            <div className="inline-block h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                        </td>
+
+                                        <td className="text-center">
+                                            <div className="inline-block h-10 w-24 bg-gray-200 rounded-lg"></div>
+                                        </td>
+                                    </tr>
+                                ))
+                                :
                             getProducts?.map((product) => (
                                 <tbody key={product._id}>
                                     <tr className="border-t">
