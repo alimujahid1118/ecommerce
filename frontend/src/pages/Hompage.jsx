@@ -34,13 +34,13 @@ export default function Homepage() {
             <div className="overflow-x-auto scrollbar-hide">
                 <div className="py-6 flex flex-row min-w-max justify-center gap-6 px-3">
                     {
-                        category.length === 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                {Array.from({ length: 4 }).map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="h-80 rounded-lg bg-gray-200 animate-pulse"
-                                    />
+                        category?.length === 0 ? (
+                            <div className="flex flex-row min-w-max justify-center gap-6 px-3 py-6">
+                                {Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="flex flex-col items-center gap-2">
+                                        <div className="w-24 h-20 md:w-32 md:h-24 bg-gray-200 rounded-lg animate-pulse" />
+                                        <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
+                                    </div>
                                 ))}
                             </div>
                         )
