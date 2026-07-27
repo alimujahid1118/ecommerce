@@ -3,6 +3,7 @@ import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 import { useState } from "react";
+import { useEffect } from "react";
 
 export default function Product () {
 
@@ -15,6 +16,20 @@ export default function Product () {
         'stock': null,
         'category': ''
     });
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await api.get("/auth/get-products");
+
+                setGetProducts(response.data.products);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     const handleChange = (e) => {
         const { name, files, type ,value } = e.target;
