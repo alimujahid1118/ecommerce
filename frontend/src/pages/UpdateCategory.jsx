@@ -8,6 +8,7 @@ export default function UpdateCategory() {
 
     const { isAuthLoading, isAuthenticated, setIsAuthenticated, setCategory } = useAppContext();
     const [ categoryBySlug, setCategoryBySlug ] = useState(null)
+    const [loading, setLoading] = useState(true);
     const [ updateCategoryBySlug, setUpdateCategoryBySlug ] = useState({
         'name' : categoryBySlug?.name,
         'imageUrl' : null
@@ -16,13 +17,16 @@ export default function UpdateCategory() {
 
     useEffect(() => {
         const getCategorySlug = async () => {
+            setLoading(true);
             try {
                 const response = await api.get(`/auth/get-category/${slug}`)
                 const updatedCategory = response.data;
                 setCategoryBySlug(updatedCategory)
             } catch (error) {
                 console.log(error)
-            }
+            } finally {
+            setLoading(false);
+        }
         }
 
         getCategorySlug();
@@ -74,6 +78,21 @@ export default function UpdateCategory() {
                     <p className="text-sm text-[#104185] px-2 md:px-4">You can Update category on this page.</p>
                 </div>
                 {/* Mobile */}
+                {loading ? (
+                    <div className="md:hidden flex flex-col gap-4 mt-6 px-6 animate-pulse">
+                        <div className="bg-white border rounded-lg py-4 px-8 space-y-4">
+                            <div>
+                                <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                <div className="h-5 w-40 bg-gray-200 rounded"></div>
+                            </div>
+
+                            <div>
+                                <div className="h-3 w-16 bg-gray-200 rounded mb-2"></div>
+                                <div className="w-20 h-20 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
                 <div className="md:hidden flex flex-col gap-4 mt-6 px-6">
                     <div className="bg-white border rounded-lg py-4 px-8 space-y-3">
                         <div>
@@ -90,7 +109,7 @@ export default function UpdateCategory() {
                         </div>
                     </div>
                 </div>
-
+                )}
                 {/* Desktop */}
                 <div className="hidden md:block px-6 mt-6">
                     <table className="w-full table-fixed right-0 bg-white border border-slate-300">
@@ -102,16 +121,28 @@ export default function UpdateCategory() {
                         </thead>
 
                         <tbody>
-                            <tr className="border-t">
-                                <td className="p-4">{categoryBySlug?.name}</td>
+                            {loading ? (
+                                <tr className="border-t animate-pulse">
+                                    <td className="p-4">
+                                        <div className="h-4 w-40 bg-gray-200 rounded"></div>
+                                    </td>
 
-                                <td className="p-4">
-                                    <img
-                                        src={categoryBySlug?.imageUrl}
-                                        className="w-16 h-16 rounded object-cover"
-                                    />
-                                </td>
-                            </tr>
+                                    <td className="p-4">
+                                        <div className="w-16 h-16 bg-gray-200 rounded"></div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                <tr className="border-t">
+                                    <td className="p-4">{categoryBySlug?.name}</td>
+
+                                    <td className="p-4">
+                                        <img
+                                            src={categoryBySlug?.imageUrl}
+                                            className="w-16 h-16 rounded object-cover"
+                                        />
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
