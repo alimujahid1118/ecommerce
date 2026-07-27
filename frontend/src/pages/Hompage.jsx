@@ -95,16 +95,24 @@ export default function Homepage() {
                     <Link to="/products" className="text-xs md:absolute md:right-10 md:text-md md:font-semibold md:justify-end px-4 py-2 border-[1px] border-[#132A36] rounded-lg">All Products</Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 max-w-[400px] md:max-w-full gap-2 py-6 w-full">
-                    { products?.length === 0 ? (
-                        <div className="flex flex-row min-w-max justify-center gap-6 px-3 py-6">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="flex flex-col items-center gap-2">
-                                    <div className="w-24 h-20 md:w-32 md:h-24 bg-gray-200 rounded-lg animate-pulse" />
-                                    <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
-                                </div>
-                            ))}
-                        </div>
-                    ) :(products?.map((product) => (
+                    { products?.length === 0 ?  Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="flex flex-col gap-2 p-4 border shadow-lg rounded-lg h-full animate-pulse"
+                    >
+                        {/* Image */}
+                        <div className="w-60 h-48 bg-gray-200 rounded-lg mx-auto" />
+
+                        {/* Product name */}
+                        <div className="mt-3 h-5 w-48 bg-gray-200 rounded mx-auto" />
+
+                        {/* Price */}
+                        <div className="mt-auto h-5 w-20 bg-gray-200 rounded mx-auto" />
+
+                        {/* Button */}
+                        <div className="w-full h-10 bg-gray-200 rounded-lg" />
+                    </div>
+                    )) :(products?.map((product) => (
                         <div
                             key={product._id}
                             className="flex flex-col gap-2 items-center p-4 border shadow-lg rounded-lg h-full"
