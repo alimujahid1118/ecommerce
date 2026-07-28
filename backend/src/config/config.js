@@ -16,12 +16,12 @@ if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI not found in environment variables.");
 }
 
-if (!process.env.CLIENT_ID) {
-    throw new Error("CLIENT_ID not found in environment variables.");
+if (!process.env.GOOGLE_CLIENT_ID) {
+    throw new Error("GOOGLE_CLIENT_ID not found in environment variables.");
 }
 
-if (!process.env.CLIENT_SECRET) {
-    throw new Error("CLIENT_SECRET not found in environment variables.");
+if (!process.env.GOOGLE_CLIENT_SECRET) {
+    throw new Error("GOOGLE_CLIENT_SECRET not found in environment variables.");
 }
 
 if (!process.env.GOOGLE_REFRESH_TOKEN) {
@@ -48,8 +48,8 @@ export const envConfig = {
     MONGO_URI: process.env.MONGO_URI,
     JWT_SECRET: process.env.JWT_SECRET,
     PORT: process.env.PORT,
-    CLIENT_ID: process.env.CLIENT_ID,
-    CLIENT_SECRET: process.env.CLIENT_SECRET,
+    CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
     GOOGLE_USER: process.env.GOOGLE_USER
 }

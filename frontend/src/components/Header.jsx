@@ -95,6 +95,20 @@ export default function Header() {
         }
     }
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchValue.trim() === "") {
+                navigate("/products");
+                return;
+            }
+            handleSearch();
+        }, 300)
+
+        return () => {
+            clearTimeout(timer)
+        }
+    }, [searchValue])
+
     return(
         <>
             <div className="flex flex-row w-full bg-[#132A36] px-6 py-1 md:py-3 text-white justify-between">
