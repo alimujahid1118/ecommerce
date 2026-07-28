@@ -100,8 +100,10 @@ export default function Header() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (location.pathname !== "/products") return;
-                handleSearch();
+            if (location.pathname !== "/products") {
+                return;
+            }
+            handleSearch();
             }, 300)
         return () => {
             clearTimeout(timer)
