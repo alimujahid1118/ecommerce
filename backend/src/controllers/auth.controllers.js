@@ -9,6 +9,7 @@ import otpModel from "../models/otp.model.js";
 import categoryModel from "../models/category.model.js";
 import productModel from "../models/product.model.js";
 import slugify from "slugify";
+import cartModel from "../models/cart.model.js";
 
 export async function register(req, res) {
 
@@ -797,4 +798,53 @@ export async function updateProductBySlug(req, res) {
         .populate("category", "name slug").lean();
 
     return res.status(201).json(updatedProduct)
+}
+
+export async function cartSync(req, res) {
+    const accessToken = req.cookies.accessToken;
+    const { items } = req.body
+
+    const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+    console.log(user)
+
+    try {
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No cart items found.",
+            });
+        }
+        for (const item of items) {
+            const existingCart = await cartModel.findOne({
+                product: item.productId,
+                user: user.id,
+            })
+
+            if (existingCart) {
+                existingCart.quantity += item.quantity;
+                await existingCart.save();
+            } else {
+                await cartModel.create({
+                    user: user.id,
+                    product: item.productId,
+                    quantity: item.quantity,
+                });
+            }
+        }
+        res.json({
+            success: true,
+            message: "Cart synced successfully",
+        })
+    } catch (error) {
+        console.error(error);
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: 'Token Expired.'
+            })
+        } else {
+            return res.status(401).json({
+                message: 'Invalid Token.'
+            })
+        }
+    }
 }

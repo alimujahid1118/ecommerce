@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom"
 import api from "../api/axios.js"
+import { useAppContext } from "../context/AppContext"
 
 export default function ProductDetails() {
 
+    const { isAuthenticated } = useAppContext();
     const [ getProductBySlug, setGetProductBySlug] = useState(null);
+    const [ cartData, setCartData ] = useState(null)
     const [loading, setLoading] = useState(true);
     const [ comment, setComment ] = useState(null)
     const { slug } = useParams();
@@ -24,6 +27,36 @@ export default function ProductDetails() {
 
         getProduct();
     }, [slug])
+
+    const handleSubmit = () => {
+
+        if (isAuthenticated) {
+            return
+        }
+
+        const item = {
+            productId: getProductBySlug._id,
+            name: getProductBySlug.name,
+            image: getProductBySlug.imageUrl,
+            price: getProductBySlug.price,
+            category: getProductBySlug.category.slug,
+            quantity: 1,
+        };
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        const existingItem = cart.find(
+            (product) => product.productId === item.productId
+        );
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push(item);
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+    };
 
     if (loading) {
         return (
@@ -103,11 +136,11 @@ export default function ProductDetails() {
                     </div>
                     <div className="flex flex-col md:flex-row items-center md:justify-center w-full gap-2 md:gap-4">
                         <div className="flex flex-row gap-2 bg-[#132A36] text-white justify-center px-4 py-2 w-full max-w-52 rounded-lg">
-                            <button className="font-semibold">ADD TO CART</button>
+                            <button onClick={handleSubmit} className="font-semibold text-nowrap">ADD TO CART</button>
                             <i className="fi fi-rr-shopping-cart-add mt-[3px]"></i>
                         </div>
                         <div className="flex flex-row gap-2 text-[#132A36] border-[1px] border-[#132A36] bg-white justify-center px-4 py-2 w-full max-w-52 rounded-lg">
-                            <Link to="/cart" className="font-semibold">VIEW CART</Link>
+                            <Link to="/cart" className="font-semibold text-nowrap">VIEW CART</Link>
                             <i className="fi fi-rr-eye mt-[3px]"></i>
                         </div>
                     </div>

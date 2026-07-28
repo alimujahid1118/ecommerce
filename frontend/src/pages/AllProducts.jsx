@@ -6,7 +6,7 @@ import api from "../api/axios";
 
 export default function AllProducts() {
 
-    const { category, totalPages, setTotalPages } = useAppContext();
+    const { category, totalPages, setTotalPages, isAuthenticated } = useAppContext();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchParams] = useSearchParams();
 
@@ -100,6 +100,36 @@ export default function AllProducts() {
 
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set("page", Math.min(paramsPage + 1, totalPages));
+
+    const handleSubmit = (product) => {
+
+        if (isAuthenticated) {
+            return
+        }
+
+        const item = {
+            productId: product._id,
+            name: product.name,
+            image: product.imageUrl,
+            price: product.price,
+            category: product.category.slug,
+            quantity: 1,
+        };
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        const existingItem = cart.find(
+            (product) => product.productId === item.productId
+        );
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push(item);
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+    };
 
     return (
         <>
@@ -384,7 +414,7 @@ export default function AllProducts() {
                                 <Link to={`/product/${product.slug}`} className="flex w-full text-[#132A36] py-2 justify-center rounded-lg bg-white border-[1px] border-[#132A36]">
                                     View details
                                 </Link>
-                                <button className="w-full bg-[#132A36] border-[1px] py-2 rounded-lg text-white">
+                                <button onClick={() => handleSubmit(product)} className="w-full bg-[#132A36] border-[1px] py-2 rounded-lg text-white">
                                     Add to Cart
                                 </button>
                             </div>

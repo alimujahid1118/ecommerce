@@ -68,4 +68,8 @@ authRouter.get('/auth/get-product/:slug', authController.getProductBySlug)
 
 authRouter.put('/auth/update-product/:slug', upload.single("image"), authController.updateProductBySlug)
 
+// POST /api/cart-sync
+
+authRouter.post('/cart-sync', authController.cartSync)
+
 export default authRouter;

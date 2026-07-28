@@ -64,7 +64,19 @@ export default function Header() {
             setSuccessMessage(response.data.message)
             setErrorMessage(null)
             setIsAuthenticated(true)
+
+            const cart = JSON.parse(localStorage.getItem("cart")) || []
+
+            if (cart.length > 0) {
+                await api.post("/cart-sync", {
+                    items: cart,
+                });
+
+                localStorage.removeItem("cart");
+            }
+
             setProfileOpen(false)
+
             navigate('/dashboard')
             
         } catch (error) {
@@ -181,7 +193,9 @@ export default function Header() {
                             onClick={() => setProfileOpen(true)}
                             className="fi fi-rr-user text-2xl text-[#104185] hover:cursor-pointer"
                         ></i>
-                        <i className="fi fi-rr-shopping-cart text-2xl text-[#104185] hover:cursor-pointer"></i>
+                        <Link to="/cart">
+                            <i className="fi fi-rr-shopping-cart text-2xl text-[#104185] hover:cursor-pointer"></i>
+                        </Link>
                     </div>
                 </div>
 
