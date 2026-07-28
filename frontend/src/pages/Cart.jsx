@@ -1,5 +1,6 @@
 import Headphone from "../assets/gaming-headphones.webp";
 import Cards from "../assets/cards.webp";
+import { Link } from "react-router-dom"
 
 export default function Cart() {
     return (
@@ -153,10 +154,9 @@ export default function Cart() {
                 <button className="w-full bg-[#132A36] text-white py-2 rounded-lg font-semibold">
                     Checkout
                 </button>
-
-                <button className="w-full border border-[#132A36] text-[#132A36] py-2 rounded-lg font-semibold">
+                <Link to="/products" className="w-full text-center border border-[#132A36] text-[#132A36] py-2 rounded-lg font-semibold">
                     Continue Shopping
-                </button>
+                </Link>
             </div>
         </div>
     );
