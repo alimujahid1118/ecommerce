@@ -46,7 +46,7 @@ export async function register(req, res) {
     //Existing User Validation
     const user = await userModel.findOne({
         $or: [{ email: emailValidated }, { username: usernameValidated }]
-    });
+    }).select("_id").lean();
 
     if (user) {
         return res.status(400).json({
@@ -315,7 +315,7 @@ export async function getMe(req, res) {
     if (accessToken) {
         try {
             const decoded = jwt.verify(accessToken, envConfig.JWT_SECRET);
-            const user = await userModel.findById(decoded.id);
+            const user = await userModel.findById(decoded.id).lean().select("firstName lastName username email createdAt");
 
             res.status(200).json({
                 user: {
@@ -341,10 +341,8 @@ export async function getMe(req, res) {
 
 export async function verifyEmail(req, res) {
     const { otp, email } = req.body;
-    console.log(otp, email)
 
     const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-    console.log(otpHash)
 
     const otpDoc = await otpModel.findOne({ email: email, otpHash: otpHash })
 
@@ -392,7 +390,7 @@ export async function createCategory(req, res) {
                 })
             }
 
-            const existingCategory = await categoryModel.findOne({ slug: slug })
+            const existingCategory = await categoryModel.findOne({ slug: slug }).select("_id").lean();
 
             if (existingCategory) {
                 return res.status(400).json({
@@ -430,7 +428,7 @@ export async function createCategory(req, res) {
 
 export async function getCategory(req, res) {
     try {
-        const category = await categoryModel.find()
+        const category = await categoryModel.find().lean()
         return res.status(200).json(category)
     } catch (error) {
         console.log(error)
@@ -450,7 +448,7 @@ export async function getCategoryBySlug(req, res) {
         try {
             const { slug } = req.params;
 
-            const category = await categoryModel.findOne({ slug: slug })
+            const category = await categoryModel.findOne({ slug: slug }).lean()
 
             if (!category) {
                 return res.status(404).json({
@@ -615,7 +613,7 @@ export async function createProduct(req, res) {
                     category: category
                 })
 
-                const getProduct = await productModel.findById(product._id).populate("author", "firstName lastName").populate("category", "name")
+                const getProduct = await productModel.findById(product._id).populate("author", "firstName lastName").populate("category", "name").lean()
 
                 return res.status(201).json(getProduct)
             } catch (error) {
@@ -649,7 +647,7 @@ export async function getProducts(req, res) {
         const filter = {};
 
         if (category) {
-            const categoryDoc = await categoryModel.findOne({ slug: category });
+            const categoryDoc = await categoryModel.findOne({ slug: category }).select("_id").lean();
 
             if (!categoryDoc) {
                 return res.status(404).json({
@@ -683,11 +681,11 @@ export async function getProducts(req, res) {
         const totalProducts = await productModel.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
 
-        const products = await query
+        const products = await query.lean()
             .skip(skip)
             .limit(limit)
             .populate("author", "firstName lastName")
-            .populate("category", "name");
+            .populate("category", "name slug");
 
         return res.status(200).json({
             success: true,
@@ -710,7 +708,7 @@ export async function getProductBySlug(req, res) {
     const { slug } = req.params;
 
     try {
-        const product = await productModel.findOne({ slug: slug }).populate("author", "firstName lastName").populate("category", "name slug")
+        const product = await productModel.findOne({ slug: slug }).populate("author", "firstName lastName").populate("category", "name slug").lean()
         return res.status(200).json(product)
     } catch (error) {
         console.log(error)
@@ -764,6 +762,7 @@ export async function updateProductBySlug(req, res) {
 
     if (name) {
         product.name = name;
+        product.slug = newSlug;
     }
     if (price) {
         product.price = price;
@@ -784,7 +783,7 @@ export async function updateProductBySlug(req, res) {
         const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
         await cloudinary.uploader.destroy(product.imagePublicId)
 
-        const result = await cloudinary.uploader.upload(base64, { foler: 'products' })
+        const result = await cloudinary.uploader.upload(base64, { folder: 'products' })
 
         product.imageUrl = result.secure_url;
         product.imagePublicId = result.public_id;
@@ -795,7 +794,7 @@ export async function updateProductBySlug(req, res) {
     const updatedProduct = await productModel
         .findById(product._id)
         .populate("author", "firstName lastName")
-        .populate("category", "name slug");
+        .populate("category", "name slug").lean();
 
     return res.status(201).json(updatedProduct)
 }

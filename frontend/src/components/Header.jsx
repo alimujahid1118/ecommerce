@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
+import { useLocation } from "react-router-dom";
 
 export default function Header() {
 
@@ -10,7 +11,9 @@ export default function Header() {
         'email' : '',
         'password' : ''
     })
-    const [ searchValue, setSearchValue ] = useState("")
+    const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const [ searchValue, setSearchValue ] = useState(searchParams.get("search") || "")
     const [successMessage, setSuccessMessage] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
@@ -97,13 +100,9 @@ export default function Header() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (searchValue.trim() === "") {
-                navigate("/products");
-                return;
-            }
-            handleSearch();
-        }, 300)
-
+            if (location.pathname !== "/products") return;
+                handleSearch();
+            }, 300)
         return () => {
             clearTimeout(timer)
         }
