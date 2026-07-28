@@ -72,4 +72,12 @@ authRouter.put('/auth/update-product/:slug', upload.single("image"), authControl
 
 authRouter.post('/cart-sync', authController.cartSync)
 
+// GET /api/get-cart
+
+authRouter.get('/get-cart', authController.getCart)
+
+// POST /api/create-cart
+
+authRouter.post('/create-cart', authController.createCart)
+
 export default authRouter;

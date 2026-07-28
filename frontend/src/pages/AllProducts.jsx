@@ -101,10 +101,19 @@ export default function AllProducts() {
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set("page", Math.min(paramsPage + 1, totalPages));
 
-    const handleSubmit = (product) => {
+    const handleSubmit = async (product) => {
 
         if (isAuthenticated) {
-            return
+            const item = {
+                productId: product._id,
+                quantity: 1
+            }
+            try {
+                const response = await api.post("/create-cart", item);
+                console.log(response)
+            } catch (error) {
+                console.log(error)
+            }
         }
 
         const item = {

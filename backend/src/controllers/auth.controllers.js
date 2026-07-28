@@ -848,3 +848,53 @@ export async function cartSync(req, res) {
         }
     }
 }
+
+export async function getCart(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid token.",
+        });
+    }
+
+    if (accessToken) {
+        try {
+            const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+
+            const cart = await cartModel
+                .find({ user: user.id })
+                .populate({
+                    path: "product",
+                    select: "name imageUrl price stock category",
+                    populate: {
+                        path: "category",
+                        select: "name slug",
+                    },
+                })
+                .lean();
+
+            if (cart.length > 0) {
+                return res.status(200).json(cart)
+            }
+            return res.status(200).json([]);
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: 'Token Expired.'
+                })
+            } else {
+                return res.status(401).json({
+                    message: 'Invalid token.'
+                })
+            }
+        }
+    }
+    return res.status(401).json({
+        message: 'Invalid token.'
+    })
+}
+
+export async function createCart(req, res) {
+    const { item } = req.body;
+}

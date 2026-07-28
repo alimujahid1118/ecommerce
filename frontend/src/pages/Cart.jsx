@@ -1,13 +1,15 @@
 import Cards from "../assets/cards.webp";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../api/axios";
 
 export default function Cart() {
     const { isAuthenticated } = useAppContext();
     const [guestCart, setGuestCart] = useState(() => {
         return JSON.parse(localStorage.getItem("cart")) || [];
     });
+    const [userCart, setUserCart] = useState([])
     const navigate = useNavigate();
 
     const handleDecrease = (productId) => {
@@ -42,6 +44,19 @@ export default function Cart() {
             setGuestCart(updatedCart);
             localStorage.setItem("cart", JSON.stringify(updatedCart));
     };
+
+    useEffect(() => {
+        const getCart = async() => {
+            try {
+                const response = await api.get("/get-cart");
+                setUserCart(response.data)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        getCart()
+    }, [])
 
     // ================= GUEST CART =================
     if (!isAuthenticated) {
@@ -236,11 +251,202 @@ export default function Cart() {
             </div>
         );
     }
+        // ================= LOGGED-IN USER CART =================
+        return (
+            <div className="flex flex-col md:flex-row w-full p-4 md:p-10 gap-6">
 
-    // ================= LOGGED-IN USER CART =================
-    return (
-        <div className="p-10 text-center">
-            Logged-in user's cart will be displayed here.
-        </div>
-    );
+                {/* Left Section */}
+                <div className="w-full md:w-3/4">
+
+                    {/* Desktop */}
+                    <div className="hidden md:block overflow-hidden rounded-lg border border-[#132A36]">
+                        {userCart.length > 0 ? (
+                            <table className="w-full">
+                                <thead className="bg-[#132A36] text-white">
+                                    <tr>
+                                        <th className="p-4 text-left">PRODUCT</th>
+                                        <th className="p-4 text-left">QUANTITY</th>
+                                        <th className="p-4 text-left">PRICE</th>
+                                        <th className="p-4 text-left"></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {userCart.map((item) => (
+                                        <tr key={item._id} className="border-b">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-4">
+                                                    <img
+                                                        src={item.product.imageUrl}
+                                                        alt={item.product.name}
+                                                        className="w-24 h-24 object-cover"
+                                                    />
+
+                                                    <div>
+                                                        <p className="font-semibold text-lg text-[#132A36]">
+                                                            {item.product.name.length > 25
+                                                                ? `${item.product.name.slice(0, 25)}...`
+                                                                : item.product.name}
+                                                        </p>
+
+                                                        <p className="text-xs font-semibold">
+                                                            Category:
+                                                            <span className="text-[#104185]">
+                                                                {" "}
+                                                                {item.product.category.name}
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div className="flex items-center gap-2">
+                                                    <button className="text-3xl">
+                                                        <i className="fi fi-rr-minus-small"></i>
+                                                    </button>
+
+                                                    <span className="border border-[#132A36] rounded-lg px-3 py-1 text-lg">
+                                                        {item.quantity}
+                                                    </span>
+
+                                                    <button className="text-3xl">
+                                                        <i className="fi fi-rr-plus-small"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div>
+                                                    <p className="font-semibold">
+                                                        $
+                                                        {(item.product.price * item.quantity).toFixed(2)}
+                                                    </p>
+
+                                                    <p className="text-xs">
+                                                        ${item.product.price.toFixed(2)} each
+                                                    </p>
+                                                </div>
+                                            </td>
+
+                                            <td className="p-4">
+                                                <button className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
+                                                    Remove
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="p-10 text-center font-semibold">
+                                Your cart is empty.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile */}
+                    <div className="md:hidden flex flex-col gap-4">
+                        {userCart.length > 0 ? (
+                            userCart.map((item) => (
+                                <div
+                                    key={item._id}
+                                    className="border border-[#132A36] rounded-lg p-4"
+                                >
+                                    <div className="flex gap-4">
+                                        <img
+                                            src={item.product.imageUrl}
+                                            alt={item.product.name}
+                                            className="w-20 h-20 object-cover"
+                                        />
+
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-lg text-[#132A36]">
+                                                {item.product.name}
+                                            </p>
+
+                                            <p className="text-sm">
+                                                Category:
+                                                <span className="text-[#104185]">
+                                                    {" "}
+                                                    {item.product.category.name}
+                                                </span>
+                                            </p>
+
+                                            <div className="flex items-center gap-3 mt-3">
+                                                <button className="text-3xl">
+                                                    <i className="fi fi-rr-minus-small"></i>
+                                                </button>
+
+                                                <span className="border border-[#132A36] rounded-lg px-3 py-1">
+                                                    {item.quantity}
+                                                </span>
+
+                                                <button className="text-3xl">
+                                                    <i className="fi fi-rr-plus-small"></i>
+                                                </button>
+                                            </div>
+
+                                            <div className="mt-3">
+                                                <p className="font-semibold">
+                                                    $
+                                                    {(item.product.price * item.quantity).toFixed(2)}
+                                                </p>
+
+                                                <p className="text-xs">
+                                                    ${item.product.price.toFixed(2)} each
+                                                </p>
+                                            </div>
+
+                                            <button className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="p-10 text-center font-semibold border rounded-lg">
+                                Your cart is empty.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Summary */}
+                <div className="w-full md:w-1/4 md:sticky md:top-28 flex flex-col p-6 border border-[#132A36] rounded-lg shadow-lg gap-4 h-fit">
+                    <div className="flex justify-between font-semibold">
+                        <p>Total Price:</p>
+
+                        <p>
+                            $
+                            {userCart
+                                .reduce(
+                                    (total, item) =>
+                                        total + item.product.price * item.quantity,
+                                    0
+                                )
+                                .toFixed(2)}
+                        </p>
+                    </div>
+
+                    <img
+                        src={Cards}
+                        alt=""
+                        className="border-y border-[#132A36]"
+                    />
+
+                    <button className="w-full bg-[#132A36] text-white py-2 rounded-lg font-semibold">
+                        Checkout
+                    </button>
+
+                    <Link
+                        to="/products"
+                        className="w-full text-center border border-[#132A36] text-[#132A36] py-2 rounded-lg font-semibold"
+                    >
+                        Continue Shopping
+                    </Link>
+                </div>
+            </div>
+        );
 }
