@@ -4,12 +4,12 @@ const productSchema = new mongoose.Schema({
     'name': {
         type: String,
         required: [true, "Product Name is a required field."],
-        unique: [true, "Product Name is a unique field."]
+        unique: true
     },
     'slug': {
         type: String,
         required: [true, "Product Slug is a required field."],
-        unique: [true, "Product Slug is a unique field."]
+        unique: true
     },
     'imageUrl': {
         type: String,

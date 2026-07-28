@@ -4,7 +4,7 @@ const categorySchema = new mongoose.Schema({
     'name': {
         type: String,
         required: [true, "Category Name is a required field."],
-        unique: [true, "Category Name must be unique."]
+        unique: true
     },
     'slug': {
         type: String,
@@ -17,7 +17,7 @@ const categorySchema = new mongoose.Schema({
     'imagePublicId': {
         type: String,
         required: [true, "Category Name is a required field."],
-        unique: [true, "Category Name must be unique."]
+        unique: true
     }
 }, { timestamps: true })
 
