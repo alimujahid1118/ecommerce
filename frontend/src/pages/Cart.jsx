@@ -107,8 +107,8 @@ export default function Cart() {
 
     useEffect(() => {
         const getCart = async() => {
+            setIsLoading(true);
             try {
-                setIsLoading(true);
                 const response = await api.get("/get-cart");
                 setUserCart(response.data)
             } catch (error) {
