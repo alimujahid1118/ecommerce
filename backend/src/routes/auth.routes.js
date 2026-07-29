@@ -80,4 +80,12 @@ authRouter.get('/get-cart', authController.getCart)
 
 authRouter.post('/create-cart', authController.createCart)
 
+// DELETE /api/remove-cart
+
+authRouter.delete('/remove-cart', authController.removeCart)
+
+// PUT /api/update-cart
+
+authRouter.put('/update-cart', authController.updateCart)
+
 export default authRouter;

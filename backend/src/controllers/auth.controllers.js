@@ -896,5 +896,119 @@ export async function getCart(req, res) {
 }
 
 export async function createCart(req, res) {
-    const { item } = req.body;
+
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid Access Token."
+        })
+    }
+
+    if (accessToken) {
+        try {
+            const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+            const { productId, quantity } = req.body;
+            const existingCartItem = await cartModel.findOne({ product: productId, user: user.id })
+
+            if (existingCartItem) {
+                existingCartItem.quantity += quantity
+                await existingCartItem.save()
+                return res.status(201).json(existingCartItem)
+            }
+
+            const cart = await cartModel.create({
+                product: productId,
+                user: user.id,
+                quantity: quantity
+            })
+
+            return res.status(201).json(cart)
+
+        } catch (error) {
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: "Access Token Expired."
+                })
+            } else {
+                return res.status(401).json({
+                    message: "Invalid Access Token."
+                })
+            }
+        }
+    }
+}
+
+export async function removeCart(req, res) {
+
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid Access Token."
+        })
+    }
+    try {
+        const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+        const { id, product } = req.body;
+        await cartModel.findOneAndDelete({ _id: id, product: product, user: user.id })
+        return res.status(200).json({
+            message: "Item deleted successfully."
+        })
+
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Access Token Expired."
+            })
+        } else {
+            return res.status(401).json({
+                message: "Invalid Access Token."
+            })
+        }
+    }
+}
+
+export async function updateCart(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid Token."
+        })
+    }
+
+    try {
+        const { id, product, action } = req.body;
+        const user = jwt.verify(accessToken, envConfig.JWT_SECRET);
+
+        const existingItem = await cartModel.findOne({ _id: id, product: product, user: user.id })
+
+        if (action === "decrease" && existingItem.quantity === 1) {
+            await cartModel.findOneAndDelete({ _id: id, product: product, user: user.id })
+            return res.status(200).json({
+                message: "Item removed."
+            })
+        }
+
+        if (action === "increase") {
+            existingItem.quantity += 1;
+        }
+        if (action === "decrease") {
+            existingItem.quantity -= 1;
+        }
+        await existingItem.save()
+
+        return res.status(200).json(existingItem)
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Token Expired."
+            })
+        } else {
+            return res.status(401).json({
+                message: "Invalid Token."
+            })
+        }
+    }
 }

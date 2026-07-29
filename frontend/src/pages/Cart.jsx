@@ -1,62 +1,129 @@
 import Cards from "../assets/cards.webp";
-import { Link, useNavigate } from "react-router-dom";
+import { data, Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import CartSkeleton from "../components/CartSkeleton";
 
 export default function Cart() {
     const { isAuthenticated } = useAppContext();
+    const [isLoading, setIsLoading] = useState(true);
     const [guestCart, setGuestCart] = useState(() => {
         return JSON.parse(localStorage.getItem("cart")) || [];
     });
     const [userCart, setUserCart] = useState([])
     const navigate = useNavigate();
 
-    const handleDecrease = (productId) => {
-        const updatedCart = guestCart
-            .map((item) =>
-                item.productId === productId
-                    ? { ...item, quantity: item.quantity - 1 }
-                    : item
-            )
-            .filter((item) => item.quantity > 0);
-
-        setGuestCart(updatedCart);
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-    };
-
-    const handleRemove = (productId) => {
-        const updatedCart = guestCart.filter(
-            (item) => item.productId !== productId
-        );
-
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-        setGuestCart(updatedCart);
-    };
-
-    const handleIncrease = (productId) => {
-        const updatedCart = guestCart.map((item) =>
-                item.productId === productId
-                    ? { ...item, quantity: item.quantity + 1 }
-                    : item
-            );
-
-            setGuestCart(updatedCart);
-            localStorage.setItem("cart", JSON.stringify(updatedCart));
-    };
-
-    useEffect(() => {
-        const getCart = async() => {
+    const handleDecrease = async (item) => {
+        if (isAuthenticated) {
             try {
-                const response = await api.get("/get-cart");
-                setUserCart(response.data)
+                const existingItem = {
+                    id: item._id,
+                    product: item.product._id,
+                    action: 'decrease'
+                }
+                const response = await api.put("/update-cart", existingItem);
+                setUserCart(prevCart =>
+                    prevCart
+                        .map(cart =>
+                            cart._id === item._id
+                                ? { ...cart, quantity: cart.quantity - 1 }
+                                : cart
+                        )
+                        .filter(cart => cart.quantity > 0)
+                );
             } catch (error) {
                 console.log(error)
             }
         }
 
-        getCart()
-    }, [])
+        if (!isAuthenticated) {
+            const updatedCart = guestCart
+                .map((existingItem) =>
+                    existingItem.productId === item.productId
+                        ? { ...existingItem, quantity: existingItem.quantity - 1 }
+                        : existingItem
+                )
+                .filter((item) => item.quantity > 0);
+
+            setGuestCart(updatedCart);
+            localStorage.setItem("cart", JSON.stringify(updatedCart));
+        }
+        
+    };
+
+    const handleRemove = async (item) => {
+
+        if (isAuthenticated) {
+            try {
+                const response = await api.delete("/remove-cart", {data: {
+                    id: item._id,
+                    product: item.product._id
+                }})
+                setUserCart((prevCart) => prevCart.filter((cartItem) => cartItem._id !== item._id))
+            } catch (error) {
+                console.log(error.response.data)
+            }
+        }
+
+        if (!isAuthenticated) {
+            const updatedCart = guestCart.filter(
+                (existingItem) => existingItem.productId !== item.productId
+            );
+
+            localStorage.setItem("cart", JSON.stringify(updatedCart));
+            setGuestCart(updatedCart);
+            }
+    };
+
+    const handleIncrease = async (item) => {
+        if (isAuthenticated) {
+            try {
+                const existingItem = {
+                    id: item._id,
+                    product: item.product._id,
+                    action: 'increase'
+                }
+                const response = await api.put("/update-cart", existingItem);
+                setUserCart((prevCart) => 
+                prevCart.map((cart) => cart._id === item._id ? {...cart, quantity: cart.quantity + 1} : cart)
+                )
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        if (!isAuthenticated) {
+            const updatedCart = guestCart.map((cartItem) =>
+                cartItem.productId === item.productId
+                    ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                    : cartItem
+            );
+
+            setGuestCart(updatedCart);
+            localStorage.setItem("cart", JSON.stringify(updatedCart));
+        }
+    };
+
+    useEffect(() => {
+        const getCart = async() => {
+            try {
+                setIsLoading(true);
+                const response = await api.get("/get-cart");
+                setUserCart(response.data)
+            } catch (error) {
+                console.log(error)
+            } finally {
+            setIsLoading(false);
+        }
+        }
+
+        if (isAuthenticated) {
+            getCart();
+        } else {
+            setIsLoading(false);
+        }
+    }, [isAuthenticated])
 
     // ================= GUEST CART =================
     if (!isAuthenticated) {
@@ -110,7 +177,7 @@ export default function Cart() {
 
                                             <td>
                                                 <div className="flex items-center gap-2">
-                                                    <button onClick={() => handleDecrease(item.productId)} className="text-3xl">
+                                                    <button onClick={() => handleDecrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-minus-small"></i>
                                                     </button>
 
@@ -118,7 +185,7 @@ export default function Cart() {
                                                         {item.quantity}
                                                     </span>
 
-                                                    <button onClick={() => handleIncrease(item.productId)} className="text-3xl">
+                                                    <button onClick={() => handleIncrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-plus-small"></i>
                                                     </button>
                                                 </div>
@@ -136,7 +203,7 @@ export default function Cart() {
                                             </td>
 
                                             <td className="p-4">
-                                                <button onClick={() => handleRemove(item.productId)} className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
+                                                <button onClick={() => handleRemove(item)} className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
                                                     Remove
                                                 </button>
                                             </td>
@@ -180,7 +247,7 @@ export default function Cart() {
                                             </p>
 
                                             <div className="flex items-center gap-3 mt-3">
-                                                <button onClick={() => handleDecrease(item.productId)} className="text-3xl">
+                                                <button onClick={() => handleDecrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-minus-small"></i>
                                                 </button>
 
@@ -188,7 +255,7 @@ export default function Cart() {
                                                     {item.quantity}
                                                 </span>
 
-                                                <button onClick={() => handleIncrease(item.productId)} className="text-3xl">
+                                                <button onClick={() => handleIncrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-plus-small"></i>
                                                 </button>
                                             </div>
@@ -202,7 +269,7 @@ export default function Cart() {
                                                 </p>
                                             </div>
 
-                                            <button onClick={() => handleRemove(item.productId)} className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
+                                            <button onClick={() => handleRemove(item)} className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
                                                 Remove
                                             </button>
                                         </div>
@@ -251,6 +318,11 @@ export default function Cart() {
             </div>
         );
     }
+
+    if (isLoading) {
+        return <CartSkeleton />;
+    }
+
         // ================= LOGGED-IN USER CART =================
         return (
             <div className="flex flex-col md:flex-row w-full p-4 md:p-10 gap-6">
@@ -302,7 +374,7 @@ export default function Cart() {
 
                                             <td>
                                                 <div className="flex items-center gap-2">
-                                                    <button className="text-3xl">
+                                                    <button onClick={() => handleDecrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-minus-small"></i>
                                                     </button>
 
@@ -310,7 +382,7 @@ export default function Cart() {
                                                         {item.quantity}
                                                     </span>
 
-                                                    <button className="text-3xl">
+                                                    <button onClick={() => handleIncrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-plus-small"></i>
                                                     </button>
                                                 </div>
@@ -330,7 +402,7 @@ export default function Cart() {
                                             </td>
 
                                             <td className="p-4">
-                                                <button className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
+                                                <button onClick={() => handleRemove(item)} className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
                                                     Remove
                                                 </button>
                                             </td>
@@ -374,7 +446,7 @@ export default function Cart() {
                                             </p>
 
                                             <div className="flex items-center gap-3 mt-3">
-                                                <button className="text-3xl">
+                                                <button onClick={() => handleDecrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-minus-small"></i>
                                                 </button>
 
@@ -382,7 +454,7 @@ export default function Cart() {
                                                     {item.quantity}
                                                 </span>
 
-                                                <button className="text-3xl">
+                                                <button onClick={() => handleIncrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-plus-small"></i>
                                                 </button>
                                             </div>
@@ -398,7 +470,7 @@ export default function Cart() {
                                                 </p>
                                             </div>
 
-                                            <button className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
+                                            <button onClick={() => handleRemove(item)} className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
                                                 Remove
                                             </button>
                                         </div>

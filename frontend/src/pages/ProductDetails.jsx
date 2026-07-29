@@ -28,10 +28,18 @@ export default function ProductDetails() {
         getProduct();
     }, [slug])
 
-    const handleSubmit = () => {
+    const handleSubmit = async (getProductBySlug) => {
 
         if (isAuthenticated) {
-            return
+            const item = {
+                productId: getProductBySlug._id,
+                quantity: 1
+            }
+            try {
+                const response = await api.post("/create-cart", item);
+            } catch (error) {
+                console.log(error)
+            }
         }
 
         const item = {
@@ -136,7 +144,7 @@ export default function ProductDetails() {
                     </div>
                     <div className="flex flex-col md:flex-row items-center md:justify-center w-full gap-2 md:gap-4">
                         <div className="flex flex-row gap-2 bg-[#132A36] text-white justify-center px-4 py-2 w-full max-w-52 rounded-lg">
-                            <button onClick={handleSubmit} className="font-semibold text-nowrap">ADD TO CART</button>
+                            <button onClick={() => handleSubmit(getProductBySlug)} className="font-semibold text-nowrap">ADD TO CART</button>
                             <i className="fi fi-rr-shopping-cart-add mt-[3px]"></i>
                         </div>
                         <div className="flex flex-row gap-2 text-[#132A36] border-[1px] border-[#132A36] bg-white justify-center px-4 py-2 w-full max-w-52 rounded-lg">

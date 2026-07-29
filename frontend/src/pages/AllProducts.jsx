@@ -110,7 +110,6 @@ export default function AllProducts() {
             }
             try {
                 const response = await api.post("/create-cart", item);
-                console.log(response)
             } catch (error) {
                 console.log(error)
             }
