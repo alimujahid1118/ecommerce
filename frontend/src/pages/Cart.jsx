@@ -208,7 +208,7 @@ export default function Cart() {
                                             </td>
 
                                             <td className="p-4">
-                                                <button onClick={() => handleRemove(item)} className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
+                                                <button onClick={() => handleRemove(item)} className="bg-[#104185] text-white px-4 py-2 rounded-lg">
                                                     Remove
                                                 </button>
                                             </td>
@@ -274,7 +274,7 @@ export default function Cart() {
                                                 </p>
                                             </div>
 
-                                            <button onClick={() => handleRemove(item)} className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
+                                            <button onClick={() => handleRemove(item)} className="w-full mt-4 bg-[#104185] text-white py-2 rounded-lg">
                                                 Remove
                                             </button>
                                         </div>
@@ -402,7 +402,7 @@ export default function Cart() {
                                             </td>
 
                                             <td className="p-4">
-                                                <button onClick={() => handleRemove(item)} className="bg-[#132A36] text-white px-4 py-2 rounded-lg">
+                                                <button onClick={() => handleRemove(item)} className="bg-[#104185] text-white px-4 py-2 rounded-lg">
                                                     Remove
                                                 </button>
                                             </td>
@@ -470,7 +470,7 @@ export default function Cart() {
                                                 </p>
                                             </div>
 
-                                            <button onClick={() => handleRemove(item)} className="w-full mt-4 bg-[#132A36] text-white py-2 rounded-lg">
+                                            <button onClick={() => handleRemove(item)} className="w-full mt-4 bg-[#104185] text-white py-2 rounded-lg">
                                                 Remove
                                             </button>
                                         </div>

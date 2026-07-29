@@ -805,7 +805,6 @@ export async function cartSync(req, res) {
     const { items } = req.body
 
     const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
-    console.log(user)
 
     try {
         if (!items || items.length === 0) {
