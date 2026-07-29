@@ -126,6 +126,11 @@ export default function Cart() {
     }, [isAuthenticated])
 
     // ================= GUEST CART =================
+
+    if (isLoading) {
+        return <CartSkeleton />;
+    }
+
     if (!isAuthenticated) {
         return (
             <div className="flex flex-col md:flex-row w-full p-4 md:p-10 gap-6">
@@ -318,11 +323,6 @@ export default function Cart() {
             </div>
         );
     }
-
-    if (isLoading) {
-        return <CartSkeleton />;
-    }
-
         // ================= LOGGED-IN USER CART =================
         return (
             <div className="flex flex-col md:flex-row w-full p-4 md:p-10 gap-6">
