@@ -2,8 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
     baseURL:
-        'https://ecommerce-backend-seven-ashy.vercel.app/api',
-    //'http://localhost:8080/api',
+        import.meta.env.VITE_SERVER_URL,
     withCredentials: true
 })
 
