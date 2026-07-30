@@ -508,7 +508,7 @@ export default function Cart() {
                         className="border-y border-[#132A36]"
                     />
 
-                    <button className="w-full bg-[#132A36] text-white py-2 rounded-lg font-semibold">
+                    <button onClick={() => navigate("/checkout")} className="w-full bg-[#132A36] text-white py-2 rounded-lg font-semibold">
                         Checkout
                     </button>
 
