@@ -6,7 +6,7 @@ import api from "../api/axios";
 import CartSkeleton from "../components/CartSkeleton";
 
 export default function Cart() {
-    const { isAuthenticated } = useAppContext();
+    const { isAuthenticated, setProfileOpen } = useAppContext();
     const [isLoading, setIsLoading] = useState(true);
     const [guestCart, setGuestCart] = useState(() => {
         return JSON.parse(localStorage.getItem("cart")) || [];
@@ -124,6 +124,11 @@ export default function Cart() {
             setIsLoading(false);
         }
     }, [isAuthenticated])
+
+    const handleLogin = () => {
+        navigate("/");
+        setProfileOpen(true)
+    }
 
     // ================= GUEST CART =================
 
@@ -309,7 +314,7 @@ export default function Cart() {
                         className="border-y border-[#132A36]"
                     />
 
-                    <button onClick={() => navigate("/login")} className="w-full bg-[#132A36] text-white py-2 rounded-lg font-semibold">
+                    <button onClick={() => handleLogin} className="w-full bg-[#132A36] text-white py-2 rounded-lg font-semibold">
                         Checkout
                     </button>
 
