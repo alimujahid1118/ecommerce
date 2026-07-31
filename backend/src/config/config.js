@@ -44,14 +44,24 @@ if (!process.env.CLOUDINARY_API_SECRET) {
     throw new Error("CLOUDINARY_API_SECRET not found.");
 }
 
+if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error("STRIPE_SECRET_KEY not found.");
+}
+
+if (!process.env.CLIENT_URL) {
+    throw new Error("CLIENT_URL not found.");
+}
+
 export const envConfig = {
     MONGO_URI: process.env.MONGO_URI,
     JWT_SECRET: process.env.JWT_SECRET,
     PORT: process.env.PORT,
     CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    CLIENT_URL: process.env.CLIENT_URL,
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
-    GOOGLE_USER: process.env.GOOGLE_USER
+    GOOGLE_USER: process.env.GOOGLE_USER,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY
 }
 
 cloudinary.config({

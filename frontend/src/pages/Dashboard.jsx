@@ -4,7 +4,7 @@ import { useAppContext } from "../context/AppContext";
 
 export default function Dashboard () {
 
-    const { isAuthenticated, setIsAuthenticated, userData, isAuthLoading } = useAppContext();
+    const { isAuthenticated, setIsAuthenticated, userData, isAuthLoading, orders } = useAppContext();
 
     if (isAuthLoading) {
         return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
@@ -43,7 +43,7 @@ export default function Dashboard () {
                         </div>
                         <div className="flex flex-col">
                             <p className="text-md font-semibold">TOTAL ORDERS</p>
-                            <p className="text-lg ml-1 font-semibold">1</p>
+                            <p className="text-lg ml-1 font-semibold">{orders? orders.length : 0}</p>
                         </div>
                     </div>
                     <div className="flex flex-row md:flex-wrap md:justify-center md:text-center gap-4 bg-white px-6 py-6 items-center md:w-full rounded-md shadow-md">
@@ -52,7 +52,11 @@ export default function Dashboard () {
                         </div>
                         <div className="flex flex-col">
                             <p className="text-md font-semibold">LIFETIME SPEND</p>
-                            <p className="text-lg ml-1 font-semibold">$4.99</p>
+                            <p className="text-lg ml-1 font-semibold">
+                                ${
+                                    orders?.reduce((sum, order) => sum + order.total, 0).toFixed(2)
+                                }
+                            </p>
                         </div>
                     </div>
                     <div className="flex flex-row md:flex-wrap md:justify-center md:text-center gap-4 bg-white px-6 py-6 items-center md:w-full rounded-md shadow-md">
@@ -136,8 +140,133 @@ export default function Dashboard () {
                         </div>
                     </div>
                 </div>
-                <div>
+                <div className="flex flex-col bg-white border rounded-lg shadow-md p-4 my-4 gap-4 w-full">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-[#132A36] font-semibold text-xl">
+                                Recent Orders
+                            </h1>
+                            <p className="text-slate-500 text-sm">
+                                Latest activity on your account
+                            </p>
+                        </div>
 
+                        <Link
+                            to={`/dashboard/orders`}
+                            className="bg-[#132A36] text-white text-nowrap px-4 py-2 rounded-lg font-semibold"
+                        >
+                            View All
+                        </Link>
+                    </div>
+
+                    <div className="h-[1px] bg-slate-200"></div>
+
+                    {orders?.length > 0 ? (
+                        <div className="flex flex-col gap-4">
+                            {orders
+                                .slice()
+                                .reverse()
+                                .slice(0, 5)
+                                .map((order) => (
+                                    <div
+                                        key={order._id}
+                                        className="border rounded-lg p-4 hover:border-[#104185] transition"
+                                    >
+                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                                            <div>
+                                                <p className="text-xs text-slate-500">
+                                                    Order Number
+                                                </p>
+                                                <p className="font-semibold text-[#132A36]">
+                                                    {order.orderNumber}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-slate-500">
+                                                    Date
+                                                </p>
+                                                <p>
+                                                    {new Date(order.createdAt).toLocaleDateString(
+                                                        "en-US",
+                                                        {
+                                                            year: "numeric",
+                                                            month: "short",
+                                                            day: "numeric",
+                                                        }
+                                                    )}
+                                                </p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-slate-500">
+                                                    Status
+                                                </p>
+
+                                                <span
+                                                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium capitalize ${
+                                                        order.orderStatus === "processing"
+                                                            ? "bg-blue-100 text-blue-700"
+                                                            : order.orderStatus === "shipped"
+                                                            ? "bg-yellow-100 text-yellow-700"
+                                                            : order.orderStatus === "delivered"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : order.orderStatus === "cancelled"
+                                                            ? "bg-red-100 text-red-700"
+                                                            : "bg-slate-100 text-slate-700"
+                                                    }`}
+                                                >
+                                                    {order.orderStatus}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-slate-500">
+                                                    Payment
+                                                </p>
+
+                                                <span
+                                                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium capitalize ${
+                                                        order.payment.status === "paid"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                                >
+                                                    {order.payment.status}
+                                                </span>
+                                            </div>
+
+                                            <div className="text-right">
+                                                <p className="text-xs text-slate-500">
+                                                    Total
+                                                </p>
+                                                <p className="font-semibold text-lg text-[#132A36]">
+                                                    ${order.total.toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
+                    ) : (
+                        <div className="py-10 text-center">
+                            <i className="fi fi-rr-box-open text-5xl text-slate-400"></i>
+                            <p className="mt-4 text-lg font-semibold text-[#132A36]">
+                                No orders yet
+                            </p>
+                            <p className="text-slate-500 mb-4">
+                                Once you place an order, it will appear here.
+                            </p>
+
+                            <Link
+                                to="/products"
+                                className="inline-block bg-[#132A36] text-white px-6 py-2 rounded-lg font-semibold"
+                            >
+                                Start Shopping
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>

@@ -10,6 +10,8 @@ const Category = lazy(() => import("./pages/Category"))
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import Orders from "./pages/Orders";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory")) 
 const Product = lazy(() => import("./pages/Product"))
 const AllProducts = lazy(() => import("./pages/AllProducts")) 
@@ -37,6 +39,8 @@ function App() {
                         <Route path="/product/:slug" element={<ProductDetails />} />
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/payment-success" element={<PaymentSuccess />} />
+                        <Route path="/dashboard/orders" element={<Orders />} />
                     </Routes>
                 </Suspense>
             </main>

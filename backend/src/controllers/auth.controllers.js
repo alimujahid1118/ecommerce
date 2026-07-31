@@ -10,6 +10,8 @@ import categoryModel from "../models/category.model.js";
 import productModel from "../models/product.model.js";
 import slugify from "slugify";
 import cartModel from "../models/cart.model.js";
+import Stripe from "stripe";
+import orderModel from "../models/order.model.js";
 
 export async function register(req, res) {
 
@@ -999,6 +1001,187 @@ export async function updateCart(req, res) {
         await existingItem.save()
 
         return res.status(200).json(existingItem)
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Token Expired."
+            })
+        } else {
+            return res.status(401).json({
+                message: "Invalid Token."
+            })
+        }
+    }
+}
+
+export async function checkoutSession(req, res) {
+
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid Tokenss."
+        })
+    }
+
+    try {
+        const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+        const userCart = await cartModel.find({ user: user.id }).populate("user", "firstName lastName email username").populate("product", "name imageUrl price stock")
+
+        const stripe = new Stripe(envConfig.STRIPE_SECRET_KEY);
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items: userCart.map((item) => ({
+                price_data: {
+                    currency: "usd",
+                    product_data: {
+                        name: item.product.name,
+                        images: [item.product.imageUrl]
+                    },
+                    unit_amount: Math.round(item.product.price * 100)
+                },
+                quantity: item.quantity
+            })),
+            mode: "payment",
+            success_url: `${envConfig.CLIENT_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${envConfig.CLIENT_URL}/checkout?payment=cancelled`
+        })
+        return res.json({ url: session.url })
+
+    } catch (error) {
+        console.log(error)
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Token Expired."
+            })
+        } else {
+            return res.status(401).json({
+                message: "Invalid Token."
+            })
+        }
+    }
+}
+
+export async function verifyPayment(req, res) {
+    const session_id = req.query.session_id;
+    const accessToken = req.cookies.accessToken;
+    const {
+        firstName,
+        lastName,
+        email,
+        phoneNo,
+        addressLine1,
+        addressLine2,
+        city,
+        state,
+        country,
+        orderNote,
+    } = req.body;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid Token.",
+        });
+    }
+
+    let user;
+
+    try {
+        user = jwt.verify(accessToken, envConfig.JWT_SECRET);
+    } catch (error) {
+        return res.status(401).json({
+            message: "Invalid or Expired Token.",
+        });
+    }
+
+    try {
+        const stripe = new Stripe(envConfig.STRIPE_SECRET_KEY);
+
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+
+        if (
+            session.status !== "complete" ||
+            session.payment_status !== "paid"
+        ) {
+            return res.status(400).json({
+                message: "Payment has not been completed.",
+            });
+        }
+
+        const existingOrder = await orderModel.findOne({
+            stripeSessionId: session.id,
+        });
+
+        if (existingOrder) {
+            return res.json(existingOrder);
+        }
+
+        const userCart = await cartModel
+            .find({ user: user.id })
+            .populate("product", "name imageUrl price stock");
+
+        const order = await orderModel.create({
+            user: user.id,
+            orderNumber: `ORD-${Date.now()}`,
+            stripeSessionId: session.id,
+
+            items: userCart.map((item) => ({
+                product: item.product._id,
+                name: item.product.name,
+                imageUrl: item.product.imageUrl,
+                price: item.product.price,
+                quantity: item.quantity,
+            })),
+
+            shippingAddress: {
+                fullName: `${firstName} ${lastName}`,
+                email,
+                phoneNo,
+                address: `${addressLine1} ${addressLine2}`.trim(),
+                city,
+                state,
+                country,
+                orderNote,
+            },
+
+            payment: {
+                paymentIntentId: session.payment_intent,
+                status: "paid",
+            },
+
+            total: session.amount_total / 100,
+            orderStatus: "processing",
+        });
+
+        await cartModel.deleteMany({
+            user: user.id,
+        });
+
+        return res.status(201).json(order);
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            message: "Something went wrong.",
+        });
+    }
+}
+
+export async function getOrders(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({
+            message: "Invalid Token."
+        })
+    }
+
+    try {
+        const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
+        const orders = await orderModel.find({ user: user.id }).populate("user", "firstName lastName email username").lean() || []
+
+        return res.status(200).json(orders)
     } catch (error) {
         if (error.name === "TokenExpiredError") {
             return res.status(401).json({

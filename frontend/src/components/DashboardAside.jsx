@@ -34,9 +34,9 @@ export default function DashboardAside() {
                 Edit Profile
             </div>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
-            <div className="px-6">
+            <Link to={`/dashboard/orders`} className="px-6">
                 My Orders
-            </div>
+            </Link>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="px-6">
                 Change Password

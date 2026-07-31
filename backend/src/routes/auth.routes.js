@@ -88,4 +88,16 @@ authRouter.delete('/remove-cart', authController.removeCart)
 
 authRouter.put('/update-cart', authController.updateCart)
 
+// POST /api/checkout-session
+
+authRouter.post('/checkout-session', authController.checkoutSession)
+
+// POST /api/verify-payment
+
+authRouter.post('/verify-payment', authController.verifyPayment)
+
+// GET /api/get-orders
+
+authRouter.get('/get-orders', authController.getOrders)
+
 export default authRouter;

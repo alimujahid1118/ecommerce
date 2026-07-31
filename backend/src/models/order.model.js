@@ -13,6 +13,11 @@ const orderSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        stripeSessionId: {
+            type: String,
+            required: true,
+            unique: true,
+        },
 
         items: [
             {
@@ -50,6 +55,15 @@ const orderSchema = new mongoose.Schema(
                 type: String,
                 required: true,
             },
+            email: {
+                type: String,
+                required: true,
+            },
+
+            phoneNo: {
+                type: Number,
+                required: true,
+            },
 
             address: {
                 type: String,
@@ -61,7 +75,17 @@ const orderSchema = new mongoose.Schema(
                 required: true,
             },
 
-            postalCode: {
+            state: {
+                type: String,
+                required: true,
+            },
+
+            country: {
+                type: String,
+                required: true,
+            },
+
+            orderNote: {
                 type: String,
                 required: true,
             },

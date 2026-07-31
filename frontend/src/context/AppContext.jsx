@@ -8,11 +8,14 @@ export function AppProvider({ children }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const [category, setCategory] = useState([])
+    const [ordersLoading, setOrdersLoading] = useState(true);
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
     const [totalPages, setTotalPages] = useState(null)
+
+    const [orders, setOrders] = useState(null)
 
     const [userData, setUserData] = useState({
         firstName: "",
@@ -61,6 +64,21 @@ export function AppProvider({ children }) {
             getCategory()
         }, [])
 
+    useEffect(() => {
+        const getOrders = async() => {
+            setOrdersLoading(true);
+            try {
+                const response = await api.get("/get-orders");
+                setOrders(response.data)
+            } catch (error) {
+                console.log(error)
+            } finally {
+                setOrdersLoading(false);
+            }
+        }
+        getOrders()
+    }, [])
+
     return (
         <AppContext.Provider
             value={{
@@ -85,6 +103,11 @@ export function AppProvider({ children }) {
 
                 totalPages,
                 setTotalPages,
+
+                orders,
+                setOrders,
+
+                ordersLoading
             }}
         >
             {children}

@@ -1,13 +1,28 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import api from "../api/axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Checkout () {
 
     const { isAuthenticated, setProfileOpen, isAuthLoading } = useAppContext();
     const [userCart, setUserCart] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [billingDetails, setBillingDetails] = useState({
+        'firstName': '',
+        'lastName': '',
+        'email': '',
+        'phoneNo': '',
+        'addressLine1': '',
+        'addressLine2': '',
+        'city': '',
+        'state': '',
+        'country': '',
+        'orderNote': ''
+    })
+    const [searchParams] = useSearchParams();
+    const paymentCancelled =
+        searchParams.get("payment") === "cancelled";
     const navigate = useNavigate();
     
     useEffect(() => {
@@ -28,65 +43,124 @@ export default function Checkout () {
         }
     }, [isAuthenticated])
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setBillingDetails((prev) => ({...prev, [name]: value}))
+    }
+
+    useEffect(() => {
+    const stored = localStorage.getItem("billingDetails");
+
+        if (stored) {
+            setBillingDetails(JSON.parse(stored));
+        }
+    }, []);
+
+    const handleSubmit = async (e) => {
+        try {
+            if (
+                !billingDetails.firstName ||
+                !billingDetails.lastName ||
+                !billingDetails.email ||
+                !billingDetails.phoneNo ||
+                !billingDetails.addressLine1 ||
+                !billingDetails.addressLine2 ||
+                !billingDetails.city ||
+                !billingDetails.state ||
+                !billingDetails.country ||
+                !billingDetails.orderNote
+            ) {
+                alert("Please complete all required fields.");
+                return;
+            }
+            localStorage.setItem("billingDetails", JSON.stringify(billingDetails))
+            const response = await api.post("/checkout-session")
+            window.location.href = response.data.url
+
+        } catch (error) {
+            console.log(error)
+            console.log(error.response)
+        }
+    }
+
     const total = userCart.reduce(
         (sum, item) => sum + item.product.price * item.quantity,
         0
     );
     
-    if (isAuthLoading) {
-        return null; // or a loading spinner
-    }
+    useEffect(() => {
+        if (!isAuthLoading && !isAuthenticated) {
+            navigate("/");
+            setProfileOpen(true);
+        }
+    }, [isAuthLoading, isAuthenticated, navigate, setProfileOpen]);
 
-    if (!isAuthenticated) {
-        navigate('/')
-        setProfileOpen(true)
-        return
-    }
+    useEffect(() => {
+        if (!isLoading && userCart.length === 0) {
+            navigate("/cart");
+        }
+    }, [isLoading, userCart, navigate]);
+
+    useEffect(() => {
+        if (paymentCancelled) {
+            const timer = setTimeout(() => {
+                navigate("/checkout", { replace: true });
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [paymentCancelled]);
 
     return (
+        <>
+        {paymentCancelled && (
+            <div className="mb-4 mx-8 rounded-lg border border-red-300 bg-red-50 p-4 text-red-700">
+                Payment was cancelled. Your billing information has been saved. You can try again.
+            </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-6">
             <div className="bg-white border-[1px] p-4 border-slate-300 rounded-lg text-[#132A36] shadow-md">
                 <h1 className="font-semibold text-2xl">Billing Address</h1>
                 <form className="flex flex-col py-4 gap-2">
                     <div className="flex flex-col gap-2">
                         <p>First Name</p>
-                        <input type="text" placeholder="eg. John" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="firstName" value={billingDetails.firstName} onChange={handleChange} type="text" placeholder="eg. John" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Last Name</p>
-                        <input type="text" placeholder="eg. Doe" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="lastName" value={billingDetails.lastName} onChange={handleChange} type="text" placeholder="eg. Doe" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Email</p>
-                        <input type="email" placeholder="eg. john@gmail.com" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="email" value={billingDetails.email} onChange={handleChange} type="email" placeholder="eg. john@gmail.com" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Phone No</p>
-                        <input type="number" placeholder="eg. 03258706115" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="phoneNo" value={billingDetails.phoneNo} onChange={handleChange} type="tel" placeholder="eg. 03258706115" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Address Line 1</p>
-                        <input type="text" placeholder="eg. 220 St No.7 Neelam Block" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="addressLine1" value={billingDetails.addressLine1} onChange={handleChange} type="text" placeholder="eg. 220 St No.7 Neelam Block" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Address Line 2</p>
-                        <input type="text" placeholder="eg. Allama Iqbal Town" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="addressLine2" value={billingDetails.addressLine2} onChange={handleChange} type="text" placeholder="eg. Allama Iqbal Town" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>City</p>
-                        <input type="text" placeholder="eg. Lahore" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="city" type="text" value={billingDetails.city} onChange={handleChange} placeholder="eg. Lahore" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>State</p>
-                        <input type="text" placeholder="eg. Punjab" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="state" type="text" value={billingDetails.state} onChange={handleChange} placeholder="eg. Punjab" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Country</p>
-                        <input type="text" placeholder="eg. Pakistan" className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <input name="country" type="text" value={billingDetails.country} onChange={handleChange} placeholder="eg. Pakistan" className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                     <div className="flex flex-col gap-2">
                         <p>Order Note</p>
-                        <textarea type="text" placeholder="eg. Additional details.." className="border-slate-300 border-[1px] rounded-md p-2" />
+                        <textarea name="orderNote" value={billingDetails.orderNote} onChange={handleChange} type="text" placeholder="eg. Additional details.." className="border-slate-300 border-[1px] rounded-md p-2" />
                     </div>
                 </form>
             </div>
@@ -143,7 +217,7 @@ export default function Checkout () {
                     <span>${total.toFixed(2)}</span>
                 </div>
                 <div className="flex flex-col text-center px-2 pb-2 gap-1">
-                    <Link className="bg-[#132A36] border-[1px] border-[#132A36] rounded-lg text-white font-semibold w-full py-2">Place Order</Link>
+                    <button onClick={handleSubmit} className="bg-[#132A36] border-[1px] border-[#132A36] rounded-lg text-white font-semibold w-full py-2">Place Order</button>
                     <Link to={`/products`} className="text-[#132A36] border-[1px] border-[#132A36] rounded-lg bg-white font-semibold w-full py-2">Continue Shopping</Link>
                     <Link to={`/cart`} className="text-[#132A36] border-[1px] border-[#132A36] rounded-lg bg-white font-semibold w-full py-2">View Cart</Link>
                 </div>
@@ -224,11 +298,12 @@ export default function Checkout () {
                     <span>${total.toFixed(2)}</span>
                 </div>
                 <div className="flex flex-col text-center px-2 pb-2 gap-1">
-                    <Link className="bg-[#132A36] border-[1px] border-[#132A36] rounded-lg text-white font-semibold w-full py-2">Place Order</Link>
+                    <button onClick={handleSubmit} className="bg-[#132A36] border-[1px] border-[#132A36] rounded-lg text-white font-semibold w-full py-2">Place Order</button>
                     <Link to={`/products`} className="text-[#132A36] border-[1px] border-[#132A36] rounded-lg bg-white font-semibold w-full py-2">Continue Shopping</Link>
                     <Link to={`/cart`} className="text-[#132A36] border-[1px] border-[#132A36] rounded-lg bg-white font-semibold w-full py-2">View Cart</Link>
                 </div>
             </div>
         </div>
+        </>
     )
 }
