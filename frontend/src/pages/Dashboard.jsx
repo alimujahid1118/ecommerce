@@ -2,191 +2,405 @@ import { Link, Navigate } from "react-router-dom";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 
-export default function Dashboard () {
+export default function Dashboard() {
 
-    const { isAuthenticated, setIsAuthenticated, userData, isAuthLoading, orders } = useAppContext();
+    const {
+        isAuthenticated,
+        setIsAuthenticated,
+        userData,
+        isAuthLoading,
+        orders,
+        ordersLoading
+    } = useAppContext();
 
     if (isAuthLoading) {
-        return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
+        return (
+            <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">
+                Loading...
+            </div>
+        );
     }
 
     if (!isAuthenticated) {
-        return <Navigate to='/' replace />;
+        return <Navigate to="/" replace />;
     }
 
     return (
-        <div className="flex flex-col md:flex-row border-t-[1px] border-slate-300 py-4 bg-slate-100 min-h-screen">
-            <DashboardAside 
-                setIsAuthenticated={setIsAuthenticated} 
-                
-            />
+        <div className="flex flex-col md:flex-row border-t border-slate-300 py-4 bg-slate-100 min-h-screen">
+
+            <DashboardAside setIsAuthenticated={setIsAuthenticated} />
+
             <main className="flex flex-col md:w-3/4 px-6">
+
+                {/* Header */}
+
                 <div className="flex flex-col gap-3">
-                    <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">Dashboard</h1>
-                    <p className="text-sm md:hidden text-[#104185] px-2">Welcome back {userData.firstName}. Here is an overview of your account.</p>
-                    <Link className="md:hidden flex flex-row gap-2 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
+
+                    <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">
+                        Dashboard
+                    </h1>
+
+                    <p className="text-sm md:hidden text-[#104185] px-2">
+                        Welcome back {userData.firstName}. Here is an overview of your account.
+                    </p>
+
+                    <Link
+                        to="/products"
+                        className="md:hidden flex gap-2 bg-white text-[#104185] py-1 rounded-lg items-center justify-center border border-[#132A36]"
+                    >
                         <i className="fi fi-rr-cart-shopping-fast mt-[3px]"></i>
                         <p className="font-semibold">Continue Shopping</p>
                     </Link>
-                    <div className="hidden md:flex md:flex-row md:items-center md:flex-wrap md:justify-between md:px-2">
-                        <p className="text-sm text-[#104185] px-2">Welcome back {userData.firstName}. Here is an overview of your account.</p>
-                        <Link to='/products' className="flex flex-row gap-2 px-6 bg-white text-[#104185] py-1 my-2 rounded-lg items-center justify-center border-[1px] border-[#132A36]">
+
+                    <div className="hidden md:flex justify-between items-center px-2 flex-wrap">
+
+                        <p className="text-sm text-[#104185]">
+                            Welcome back {userData.firstName}. Here is an overview of your account.
+                        </p>
+
+                        <Link
+                            to="/products"
+                            className="flex gap-2 px-6 bg-white text-[#104185] py-1 my-2 rounded-lg items-center border border-[#132A36]"
+                        >
                             <i className="fi fi-rr-cart-shopping-fast mt-[3px]"></i>
-                            <p className="font-semibold shrink-0">Continue Shopping</p>
+                            <p className="font-semibold">Continue Shopping</p>
                         </Link>
+
                     </div>
+
                 </div>
-                <div className="flex flex-col md:grid md:grid-cols-3 gap-4 py-4">
-                    <div className="flex flex-row md:flex-wrap md:justify-center md:text-center gap-4 bg-white px-6 py-6 items-center md:w-full rounded-md shadow-md">
-                        <div className="text-[#104185] text-4xl mt-2">
-                            <i className="fi fi-rr-grocery-basket"></i>
-                        </div>
-                        <div className="flex flex-col">
-                            <p className="text-md font-semibold">TOTAL ORDERS</p>
-                            <p className="text-lg ml-1 font-semibold">{orders? orders.length : 0}</p>
-                        </div>
+
+                {/* Stats */}
+
+                {ordersLoading ? (
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+
+                        {Array.from({ length: 3 }).map((_, i) => (
+
+                            <div
+                                key={i}
+                                className="bg-white rounded-md shadow-md px-6 py-6 animate-pulse"
+                            >
+
+                                <div className="flex items-center gap-4">
+
+                                    <div className="w-14 h-14 rounded-full bg-gray-200"></div>
+
+                                    <div className="flex-1 space-y-3">
+
+                                        <div className="h-4 w-32 bg-gray-200 rounded"></div>
+
+                                        <div className="h-6 w-16 bg-gray-200 rounded"></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        ))}
+
                     </div>
-                    <div className="flex flex-row md:flex-wrap md:justify-center md:text-center gap-4 bg-white px-6 py-6 items-center md:w-full rounded-md shadow-md">
-                        <div className="text-[#104185] text-4xl mt-2">
-                            <i className="fi fi-rr-piggy-bank"></i>
+
+                ) : (
+
+                    <div className="flex flex-col md:grid md:grid-cols-3 gap-4 py-4">
+
+                        <div className="flex gap-4 bg-white px-6 py-6 rounded-md shadow-md items-center md:justify-center md:flex-wrap md:text-center">
+
+                            <div className="text-[#104185] text-4xl">
+                                <i className="fi fi-rr-grocery-basket"></i>
+                            </div>
+
+                            <div>
+
+                                <p className="font-semibold">
+                                    TOTAL ORDERS
+                                </p>
+
+                                <p className="text-lg font-semibold">
+                                    {orders?.length ?? 0}
+                                </p>
+
+                            </div>
+
                         </div>
-                        <div className="flex flex-col">
-                            <p className="text-md font-semibold">LIFETIME SPEND</p>
-                            <p className="text-lg ml-1 font-semibold">
-                                ${
-                                    orders?.reduce((sum, order) => sum + order.total, 0).toFixed(2)
-                                }
-                            </p>
+
+                        <div className="flex gap-4 bg-white px-6 py-6 rounded-md shadow-md items-center md:justify-center md:flex-wrap md:text-center">
+
+                            <div className="text-[#104185] text-4xl">
+                                <i className="fi fi-rr-piggy-bank"></i>
+                            </div>
+
+                            <div>
+
+                                <p className="font-semibold">
+                                    LIFETIME SPEND
+                                </p>
+
+                                <p className="text-lg font-semibold">
+                                    $
+                                    {(orders?.reduce((sum, order) => sum + order.total, 0) ?? 0).toFixed(2)}
+                                </p>
+
+                            </div>
+
                         </div>
+
+                        <div className="flex gap-4 bg-white px-6 py-6 rounded-md shadow-md items-center md:justify-center md:flex-wrap md:text-center">
+
+                            <div className="text-[#104185] text-4xl">
+                                <i className="fi fi-rr-hr-person"></i>
+                            </div>
+
+                            <div>
+
+                                <p className="font-semibold">
+                                    MEMBER SINCE
+                                </p>
+
+                                <p className="text-lg font-semibold">
+                                    {new Date(userData.createdAt).toLocaleDateString(
+                                        "en-US",
+                                        {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric"
+                                        }
+                                    )}
+                                </p>
+
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div className="flex flex-row md:flex-wrap md:justify-center md:text-center gap-4 bg-white px-6 py-6 items-center md:w-full rounded-md shadow-md">
-                        <div className="text-[#104185] text-4xl mt-2">
-                            <i className="fi fi-rr-hr-person"></i>
-                        </div>
-                        <div className="flex flex-col">
-                            <p className="text-md font-semibold">MEMBER SINCE</p>
-                            <p className="text-lg ml-1 font-semibold">{new Date(userData.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                            })}</p>
-                        </div>
-                    </div>
-                </div>
+
+                )}
+
+                {/* Account + Shortcuts */}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+
                     <div className="bg-white flex flex-col shadow-lg p-4 gap-4 rounded-lg">
-                        <div className="flex flex-col gap-1">
-                            <h1 className="text-[#132A36] font-semibold text-xl">Account Details</h1>
-                            <p className="text-slate-500 text-sm">Contact details used for orders and notifications</p>
+
+                        <div>
+
+                            <h1 className="text-[#132A36] font-semibold text-xl">
+                                Account Details
+                            </h1>
+
+                            <p className="text-slate-500 text-sm">
+                                Contact details used for orders and notifications
+                            </p>
+
                         </div>
-                        <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                        <div className="flex flex-col gap-2">
-                            <div className="flex gap-1 text-sm">
-                                <p className="text-sm font-semibold">Name: </p>
-                                <p>{userData.firstName}{" "}{userData.lastName}</p>
-                            </div>
-                            <div className="flex gap-1 text-sm">
-                                <p className="text-sm font-semibold">Email: </p>
-                                <p>{userData.email}</p>
-                            </div>
-                            <div className="flex gap-1 text-sm">
-                                <p className="text-sm font-semibold">Username: </p>
-                                <p>{userData.username}</p>
-                            </div>
+
+                        <div className="h-[1px] bg-slate-200"></div>
+
+                        <div className="space-y-2">
+
+                            <p>
+                                <span className="font-semibold">Name:</span>{" "}
+                                {userData.firstName} {userData.lastName}
+                            </p>
+
+                            <p>
+                                <span className="font-semibold">Email:</span>{" "}
+                                {userData.email}
+                            </p>
+
+                            <p>
+                                <span className="font-semibold">Username:</span>{" "}
+                                {userData.username}
+                            </p>
+
                         </div>
-                        <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                        <Link className="flex flex-row gap-2 justify-center bg-[#104185] text-white font-semibold px-4 py-2 rounded-lg">
+
+                        <div className="h-[1px] bg-slate-200"></div>
+
+                        <Link className="flex justify-center gap-2 bg-[#104185] text-white font-semibold rounded-lg py-2">
+
                             <i className="fi fi-rr-user-pen mt-[2px]"></i>
+
                             <p>Edit Profile</p>
+
                         </Link>
+
                     </div>
-                    <div className="grid grid-cols-1 bg-white w-full rounded-lg">
-                        <div className="flex flex-col shadow-lg p-4 gap-4">
-                            <div className="flex flex-col gap-1">
-                                <h1 className="text-[#132A36] font-semibold text-xl">Shortcuts</h1>
-                                <p className="text-slate-500 text-sm">Common actions</p>
-                            </div>
-                            <p className="w-full bg-slate-200 py-[0.5px]"></p>
-                            <div className="flex flex-col gap-2">
-                                <Link className="flex flex-row justify-between p-2">
-                                    <div className="flex flex-row gap-2">
-                                        <i className="fi fi-rr-box text-[#104185] mt-[2px]"></i>
-                                        <p className="text-[#132A36]">My Orders</p>
-                                    </div>
-                                    <p className="text-[#132A36]">{">"}</p>
-                                </Link>
-                                <Link to={"/products"} className="flex flex-row justify-between p-2">
-                                    <div className="flex flex-row gap-2">
-                                        <i className="fi fi-rr-shopping-bag text-[#104185] mt-[2px]"></i>
-                                        <p className="text-[#132A36]">Browse Products</p>
-                                    </div>
-                                    <p className="text-[#132A36]">{">"}</p>
-                                </Link>
-                                <Link to={"/cart"} className="flex flex-row justify-between p-2">
-                                    <div className="flex flex-row gap-2">
-                                        <i className="fi fi-rr-shopping-cart text-[#104185] mt-[2px]"></i>
-                                        <p className="text-[#132A36]">Shopping Cart</p>
-                                    </div>
-                                    <p className="text-[#132A36]">{">"}</p>
-                                </Link>
-                                <Link className="flex flex-row justify-between p-2">
-                                    <div className="flex flex-row gap-2">
-                                        <i className="fi fi-rr-credit-card text-[#104185] mt-[2px]"></i>
-                                        <p className="text-[#132A36]">Saved Payment Methods</p>
-                                    </div>
-                                    <p className="text-[#132A36]">{">"}</p>
-                                </Link>
-                            </div>
+
+                    <div className="bg-white rounded-lg shadow-lg p-4">
+
+                        <div>
+
+                            <h1 className="text-[#132A36] font-semibold text-xl">
+                                Shortcuts
+                            </h1>
+
+                            <p className="text-slate-500 text-sm">
+                                Common actions
+                            </p>
+
                         </div>
+
+                        <div className="h-[1px] bg-slate-200 my-4"></div>
+
+                        <div className="flex flex-col gap-2">
+
+                            <Link to="/dashboard/orders" className="flex justify-between p-2">
+
+                                <div className="flex gap-2">
+                                    <i className="fi fi-rr-box text-[#104185] mt-[2px]"></i>
+                                    <p>My Orders</p>
+                                </div>
+
+                                <p>{">"}</p>
+
+                            </Link>
+
+                            <Link
+                                to="/products"
+                                className="flex justify-between p-2"
+                            >
+
+                                <div className="flex gap-2">
+                                    <i className="fi fi-rr-shopping-bag text-[#104185] mt-[2px]"></i>
+                                    <p>Browse Products</p>
+                                </div>
+
+                                <p>{">"}</p>
+
+                            </Link>
+
+                            <Link
+                                to="/cart"
+                                className="flex justify-between p-2"
+                            >
+
+                                <div className="flex gap-2">
+                                    <i className="fi fi-rr-shopping-cart text-[#104185] mt-[2px]"></i>
+                                    <p>Shopping Cart</p>
+                                </div>
+
+                                <p>{">"}</p>
+
+                            </Link>
+
+                            <Link className="flex justify-between p-2">
+
+                                <div className="flex gap-2">
+                                    <i className="fi fi-rr-credit-card text-[#104185] mt-[2px]"></i>
+                                    <p>Saved Payment Methods</p>
+                                </div>
+
+                                <p>{">"}</p>
+
+                            </Link>
+
+                        </div>
+
                     </div>
+
                 </div>
-                <div className="flex flex-col bg-white border rounded-lg shadow-md p-4 my-4 gap-4 w-full">
+
+                {/* Recent Orders starts here */}
+                                <div className="flex flex-col bg-white border rounded-lg shadow-md p-4 my-4 gap-4 w-full">
+
                     <div className="flex items-center justify-between">
+
                         <div>
                             <h1 className="text-[#132A36] font-semibold text-xl">
                                 Recent Orders
                             </h1>
+
                             <p className="text-slate-500 text-sm">
                                 Latest activity on your account
                             </p>
                         </div>
 
                         <Link
-                            to={`/dashboard/orders`}
-                            className="bg-[#132A36] text-white text-nowrap px-4 py-2 rounded-lg font-semibold"
+                            to="/dashboard/orders"
+                            className="bg-[#132A36] text-white px-4 py-2 rounded-lg font-semibold"
                         >
                             View All
                         </Link>
+
                     </div>
 
                     <div className="h-[1px] bg-slate-200"></div>
 
-                    {orders?.length > 0 ? (
+                    {ordersLoading ? (
+
                         <div className="flex flex-col gap-4">
+
+                            {Array.from({ length: 5 }).map((_, i) => (
+
+                                <div
+                                    key={i}
+                                    className="border rounded-lg p-4 animate-pulse"
+                                >
+
+                                    <div className="flex flex-col md:flex-row md:justify-between gap-6">
+
+                                        {Array.from({ length: 5 }).map((_, j) => (
+
+                                            <div
+                                                key={j}
+                                                className="space-y-2"
+                                            >
+
+                                                <div className="h-3 w-16 bg-gray-200 rounded"></div>
+
+                                                <div className="h-5 w-24 bg-gray-200 rounded"></div>
+
+                                            </div>
+
+                                        ))}
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    ) : orders?.length > 0 ? (
+
+                        <div className="flex flex-col gap-4">
+
                             {orders
                                 .slice()
                                 .reverse()
                                 .slice(0, 5)
                                 .map((order) => (
+
                                     <div
                                         key={order._id}
                                         className="border rounded-lg p-4 hover:border-[#104185] transition"
                                     >
+
                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
                                             <div>
+
                                                 <p className="text-xs text-slate-500">
                                                     Order Number
                                                 </p>
+
                                                 <p className="font-semibold text-[#132A36]">
                                                     {order.orderNumber}
                                                 </p>
+
                                             </div>
 
                                             <div>
+
                                                 <p className="text-xs text-slate-500">
                                                     Date
                                                 </p>
+
                                                 <p>
                                                     {new Date(order.createdAt).toLocaleDateString(
                                                         "en-US",
@@ -197,9 +411,11 @@ export default function Dashboard () {
                                                         }
                                                     )}
                                                 </p>
+
                                             </div>
 
                                             <div>
+
                                                 <p className="text-xs text-slate-500">
                                                     Status
                                                 </p>
@@ -219,9 +435,11 @@ export default function Dashboard () {
                                                 >
                                                     {order.orderStatus}
                                                 </span>
+
                                             </div>
 
                                             <div>
+
                                                 <p className="text-xs text-slate-500">
                                                     Payment
                                                 </p>
@@ -235,26 +453,39 @@ export default function Dashboard () {
                                                 >
                                                     {order.payment.status}
                                                 </span>
+
                                             </div>
 
                                             <div className="text-right">
+
                                                 <p className="text-xs text-slate-500">
                                                     Total
                                                 </p>
+
                                                 <p className="font-semibold text-lg text-[#132A36]">
                                                     ${order.total.toFixed(2)}
                                                 </p>
+
                                             </div>
+
                                         </div>
+
                                     </div>
+
                                 ))}
+
                         </div>
+
                     ) : (
+
                         <div className="py-10 text-center">
+
                             <i className="fi fi-rr-box-open text-5xl text-slate-400"></i>
+
                             <p className="mt-4 text-lg font-semibold text-[#132A36]">
                                 No orders yet
                             </p>
+
                             <p className="text-slate-500 mb-4">
                                 Once you place an order, it will appear here.
                             </p>
@@ -265,10 +496,15 @@ export default function Dashboard () {
                             >
                                 Start Shopping
                             </Link>
+
                         </div>
+
                     )}
+
                 </div>
+
             </main>
+
         </div>
     );
 }
