@@ -22,6 +22,7 @@ export function AppProvider({ children }) {
         lastName: "",
         username: "",
         email: "",
+        is_admin: false
     });
 
     const [categoryData, setCategoryData] = useState({
@@ -42,6 +43,7 @@ export function AppProvider({ children }) {
                     lastName: "",
                     username: "",
                     email: "",
+                    is_admin: false
                 });
             } finally {
             setIsAuthLoading(false);

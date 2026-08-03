@@ -4,7 +4,7 @@ import { useAppContext } from "../context/AppContext";
 
 export default function DashboardAside() {
 
-    const {setIsAuthenticated} = useAppContext();
+    const {setIsAuthenticated, userData } = useAppContext();
     const navigate = useNavigate();
     const handleLogout = async () => {
         try {
@@ -41,6 +41,16 @@ export default function DashboardAside() {
             <div className="px-6">
                 Change Password
             </div>
+            {
+                userData.is_admin && (
+                    <>
+                        <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                        <Link to="/dashboard/users" className="px-6">
+                            Manage Users
+                        </Link>
+                    </>
+                )
+            }
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="flex flex-row gap-2 px-2 py-2 mb-2 mx-2 justify-center bg-[#132A36] text-white font-semibold rounded-md">
                 <i className="fi fi-rr-power mt-[3px]"></i>

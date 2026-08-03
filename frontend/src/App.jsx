@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Orders from "./pages/Orders";
+import ManageUsers from "./pages/ManageUsers";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory")) 
 const Product = lazy(() => import("./pages/Product"))
 const AllProducts = lazy(() => import("./pages/AllProducts")) 
@@ -41,6 +42,7 @@ function App() {
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/payment-success" element={<PaymentSuccess />} />
                         <Route path="/dashboard/orders" element={<Orders />} />
+                        <Route path="/dashboard/users" element={<ManageUsers />} />
                     </Routes>
                 </Suspense>
             </main>

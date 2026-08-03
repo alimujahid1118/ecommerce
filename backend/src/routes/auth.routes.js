@@ -19,10 +19,17 @@ authRouter.post('/auth/logout-all-devices', authController.logoutAll);
 // GET /api/auth/update-refresh-token
 authRouter.get('/auth/update-refresh-token', authController.UpdateRefreshToken);
 
-// GET /api/auth/get-dashboard
-//Protected Route
+// GET /api/auth/get-me
 
 authRouter.get('/auth/get-me', authController.getMe)
+
+// GET /api/auth/get-users
+
+authRouter.get('/auth/get-users', authController.getUsers)
+
+// DELETE /api/auth/delete-user/:userId
+
+authRouter.delete('/auth/delete-user/:userId', authController.deleteUser)
 
 // POST /api/auth/verify-email
 

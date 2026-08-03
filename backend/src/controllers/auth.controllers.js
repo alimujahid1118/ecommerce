@@ -166,6 +166,7 @@ export async function login(req, res) {
             lastName: user.lastName,
             username: user.username,
             email: user.email,
+            is_admin: user.is_admin,
             createdAt: user.createdAt
         }
     })
@@ -318,7 +319,7 @@ export async function getMe(req, res) {
     if (accessToken) {
         try {
             const decoded = jwt.verify(accessToken, envConfig.JWT_SECRET);
-            const user = await userModel.findById(decoded.id).lean().select("firstName lastName username email createdAt");
+            const user = await userModel.findById(decoded.id).lean().select("firstName lastName username email is_admin createdAt");
 
             res.status(200).json({
                 user: {
@@ -326,6 +327,7 @@ export async function getMe(req, res) {
                     lastName: user.lastName,
                     username: user.username,
                     email: user.email,
+                    is_admin: user.is_admin,
                     createdAt: user.createdAt
                 }
             })
@@ -339,6 +341,56 @@ export async function getMe(req, res) {
                 message: "Invalid Access Token."
             })
         }
+    }
+}
+
+export async function getUsers(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({ message: "Invalid Access Token." });
+    }
+
+    try {
+        const decoded = jwt.verify(accessToken, envConfig.JWT_SECRET);
+        const user = await userModel.findById(decoded.id).lean();
+
+        if (!user || !user.is_admin) {
+            return res.status(403).json({ message: "Access denied. Only admins can perform this action." });
+        }
+
+        const users = await userModel.find().lean().select("firstName lastName username email is_admin createdAt");
+        res.status(200).json({ users });
+    } catch (error) {
+        return res.status(401).json({ message: "Invalid Access Token." });
+    }
+}
+
+export async function deleteUser(req, res) {
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+        return res.status(401).json({ message: "Invalid Access Token." });
+    }
+
+    try {
+        const decoded = jwt.verify(accessToken, envConfig.JWT_SECRET);
+        const user = await userModel.findById(decoded.id).lean();
+
+        if (!user || !user.is_admin) {
+            return res.status(403).json({ message: "Access denied. Only admins can perform this action." });
+        }
+
+        const { userId } = req.params;
+        const deletedUser = await userModel.findByIdAndDelete(userId).lean();
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        res.status(200).json({ message: "User deleted successfully." });
+    } catch (error) {
+        return res.status(401).json({ message: "Invalid Access Token." });
     }
 }
 
