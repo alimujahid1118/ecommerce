@@ -1206,6 +1206,25 @@ export async function verifyPayment(req, res) {
             orderStatus: "processing",
         });
 
+        await Promise.all(
+            userCart.map(async (item) => {
+                const updated = await productModel.findOneAndUpdate(
+                    {
+                        _id: item.product._id,
+                        stock: { $gte: item.quantity },
+                    },
+                    {
+                        $inc: { stock: -item.quantity },
+                    },
+                    { new: true }
+                );
+
+                if (!updated) {
+                    throw new Error(`${item.product.name} is out of stock.`);
+                }
+            })
+        );
+
         await cartModel.deleteMany({
             user: user.id,
         });
