@@ -1,6 +1,18 @@
 import { Link, Navigate } from "react-router-dom";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
+import { useState } from "react";
+import { useEffect } from "react";
+import api from "../api/axios";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 
 export default function Dashboard() {
 
@@ -12,6 +24,21 @@ export default function Dashboard() {
         orders,
         ordersLoading
     } = useAppContext();
+    const [period, setPeriod] = useState("week");
+    const [ ordersChart, setOrdersChart ] = useState([])
+
+    useEffect(() => {
+        const getChart = async () => {
+            try {
+                const { data } = await api.post("/orders-chart", { period });
+                setOrdersChart(data);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getChart();
+    }, [period]);
 
     if (isAuthLoading) {
         return (
@@ -305,7 +332,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Recent Orders starts here */}
-                                <div className="flex flex-col bg-white border rounded-lg shadow-md p-4 my-4 gap-4 w-full">
+                <div className="flex flex-col bg-white border rounded-lg shadow-md p-4 my-4 gap-4 w-full">
 
                     <div className="flex items-center justify-between">
 
@@ -501,6 +528,53 @@ export default function Dashboard() {
 
                     )}
 
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 w-full">
+                    <div className="bg-white flex flex-col shadow-lg p-4 gap-4 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-[#132A36] font-semibold text-xl">
+                                Filter Orders
+                            </h1>
+                            <select
+                                value={period}
+                                onChange={(e) => setPeriod(e.target.value)}
+                                className="border rounded-lg px-3 py-2"
+                            >
+                                <option value="week">Last 7 Days</option>
+                                <option value="month">Last 30 Days</option>
+                            </select>
+                        </div>
+                        <div>
+                            <ResponsiveContainer width="100%" height={300}>
+                            <BarChart
+                                layout="vertical"
+                                data={ordersChart}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+
+                                <XAxis type="number" />
+
+                                <YAxis
+                                    type="category"
+                                    dataKey="product"
+                                    width={120}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="sold"
+                                    radius={[0, 6, 6, 0]}
+                                    fill="#3b82f6"
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                        </div>
+                    </div>
+                    <div>
+                        
+                    </div>
                 </div>
 
             </main>

@@ -1265,3 +1265,63 @@ export async function getOrders(req, res) {
         }
     }
 }
+
+export async function ordersChart(req, res) {
+
+    const { period } = req.body;
+
+    const end = new Date();
+    const start = new Date();
+
+    if (period === "week") {
+        start.setDate(end.getDate() - 6);
+    }
+
+    if (period === "month") {
+        start.setDate(end.getDate() - 29);
+    }
+
+    try {
+        const orders = await orderModel.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: start,
+                        $lte: end,
+                    },
+                },
+            },
+            {
+                $unwind: "$items",
+            },
+            {
+                $group: {
+                    _id: "$items.name",
+                    sold: {
+                        $sum: "$items.quantity",
+                    },
+                },
+            },
+            {
+                $sort: {
+                    sold: -1,
+                },
+            },
+            {
+                $limit: 5,
+            },
+            {
+                $project: {
+                    _id: 0,
+                    product: "$_id",
+                    sold: 1,
+                },
+            },
+
+        ])
+        return res.json(orders);
+    } catch (error) {
+        res.json(error.message)
+    }
+
+}

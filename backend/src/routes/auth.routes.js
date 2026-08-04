@@ -107,4 +107,11 @@ authRouter.post('/verify-payment', authController.verifyPayment)
 
 authRouter.get('/get-orders', authController.getOrders)
 
+
+//////Learning purpose routes
+
+// POST /api/orders-chart
+
+authRouter.post('/orders-chart', authController.ordersChart)
+
 export default authRouter;
