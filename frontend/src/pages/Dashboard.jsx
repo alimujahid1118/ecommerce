@@ -566,7 +566,7 @@ export default function Dashboard() {
                                 <Bar
                                     dataKey="sold"
                                     radius={[0, 6, 6, 0]}
-                                    fill="#3b82f6"
+                                    fill="#132A36"
                                 />
                             </BarChart>
                         </ResponsiveContainer>
