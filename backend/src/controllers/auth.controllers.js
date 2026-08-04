@@ -1325,3 +1325,17 @@ export async function ordersChart(req, res) {
     }
 
 }
+
+export async function practice(req, res) {
+    try {
+        const orders = await orderModel.aggregate([
+            { $unwind: "$items" },
+            { $group: { _id: "$items.name", totalSales: { $sum: "$items.quantity" } } }
+        ])
+
+        return res.json(orders)
+    } catch (error) {
+        console.log(error)
+        res.json(error)
+    }
+}

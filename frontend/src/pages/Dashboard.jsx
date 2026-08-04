@@ -534,7 +534,7 @@ export default function Dashboard() {
                     <div className="bg-white flex flex-col shadow-lg p-4 gap-4 rounded-lg">
                         <div className="flex items-center justify-between">
                             <h1 className="text-[#132A36] font-semibold text-xl">
-                                Filter Orders
+                                Most selling products
                             </h1>
                             <select
                                 value={period}
@@ -551,7 +551,7 @@ export default function Dashboard() {
                                 layout="vertical"
                                 data={ordersChart}
                             >
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                <CartesianGrid horizontal={false} />
 
                                 <XAxis type="number" />
 
@@ -565,18 +565,14 @@ export default function Dashboard() {
 
                                 <Bar
                                     dataKey="sold"
-                                    radius={[0, 6, 6, 0]}
+                                    radius={[0, 4, 4, 0]}
                                     fill="#132A36"
                                 />
                             </BarChart>
                         </ResponsiveContainer>
                         </div>
                     </div>
-                    <div>
-                        
-                    </div>
                 </div>
-
             </main>
 
         </div>
