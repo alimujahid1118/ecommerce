@@ -111,8 +111,4 @@ authRouter.get('/get-orders', authController.getOrders)
 
 authRouter.post('/orders-chart', authController.ordersChart)
 
-// PRACTICE /api/practice
-
-authRouter.get('/practice', authController.practice)
-
 export default authRouter;
