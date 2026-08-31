@@ -48,6 +48,18 @@ if (!process.env.CLIENT_URL) {
     throw new Error("CLIENT_URL not found.");
 }
 
+if (!process.env.FIREBASE_PROJECT_ID) {
+    throw new Error("FIREBASE_PROJECT_ID not found.");
+}
+
+if (!process.env.FIREBASE_CLIENT_EMAIL) {
+    throw new Error("FIREBASE_CLIENT_EMAIL not found.");
+}
+
+if (!process.env.FIREBASE_PRIVATE_KEY) {
+    throw new Error("FIREBASE_PRIVATE_KEY not found.");
+}
+
 export const envConfig = {
     MONGO_URI: process.env.MONGO_URI,
     JWT_SECRET: process.env.JWT_SECRET,
@@ -57,7 +69,10 @@ export const envConfig = {
     CLIENT_URL: process.env.CLIENT_URL,
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
     GOOGLE_USER: process.env.GOOGLE_USER,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+    FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+    FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
 }
 
 cloudinary.config({
