@@ -14,10 +14,11 @@ const messaging = firebase.messaging()
 
 messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification?.title || "New notification"
-    const notificationOptions = payload.notification?.body || "You have a new message"
-
-    console.log("notificationTitle: ", notificationTitle)
-    console.log("notificationOptions: ", notificationOptions)
+    const notificationOptions = {
+        body: payload.notification?.body || "You have a new message",
+        icon: "/web-logo.png",
+        badge: "/web-logo.png"
+    }
 
     self.registration.showNotification(
         notificationTitle,
