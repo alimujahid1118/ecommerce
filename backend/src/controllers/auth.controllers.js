@@ -468,7 +468,7 @@ export async function createCategory(req, res) {
             await sendToTopic("all_users", {
                 title: `🔥🔥 New category added 🔥🔥`,
                 body: `New Category ${name} has been added to the store.`
-            })
+            }, undefined, { type: "category", link: `/products?category=${slug}` })
 
             return res.status(201).json(category)
         } catch (error) {
@@ -677,7 +677,7 @@ export async function createProduct(req, res) {
                 await sendToTopic("all_users", {
                     title: `🔥🔥 New product added 🔥🔥`,
                     body: `New Product ${name} has been added to the store.`
-                })
+                }, undefined, { type: "product", link: `/product/${slug}` })
 
                 const getProduct = await productModel.findById(product._id).populate("author", "firstName lastName").populate("category", "name").lean()
 
@@ -1221,7 +1221,7 @@ export async function verifyPayment(req, res) {
             await sendToUser(user.id, {
                 title: "Order placed successfully",
                 body: `Your order ${order.orderNumber} has been placed.`
-            });
+            }, undefined, { type: "order", link: "/dashboard/orders" });
         } catch (error) {
             console.error("Failed to send order notification:", error);
         }

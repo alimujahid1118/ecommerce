@@ -17,6 +17,7 @@ import NotificationPermissionPopup from "./components/NotificationPermissionPopu
 import NotificationToast from "./components/NotificationToast";
 import { onMessage } from "firebase/messaging";
 import { messaging } from "./firebase/firebase";
+import { useAppContext } from "./context/AppContext";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
 const Product = lazy(() => import("./pages/Product"))
 const AllProducts = lazy(() => import("./pages/AllProducts"))
@@ -27,6 +28,7 @@ const Promotions = lazy(() => import("./pages/Promotions"))
 
 function App() {
     const [toasts, setToasts] = useState([]);
+    const { refreshNotifications } = useAppContext();
 
     const dismissToast = useCallback((id) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -42,10 +44,12 @@ function App() {
                     body: payload.notification?.body,
                 },
             ]);
+
+            refreshNotifications();
         })
 
         return () => unsubscribe()
-    }, [])
+    }, [refreshNotifications])
 
     return (
         <div className="min-h-screen flex flex-col">

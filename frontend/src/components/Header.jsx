@@ -1,22 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
 import { useLocation } from "react-router-dom";
-import { removeCurrentToken, syncTokenIfGranted } from "../firebase/tokenSync";
+import NotificationMenu from "./NotificationMenu";
+import ProfileMenu from "./ProfileMenu";
 
 export default function Header() {
 
-    const { menuOpen, setMenuOpen, profileOpen, setProfileOpen, isAuthenticated, setIsAuthenticated, setUserData, category } = useAppContext();
-    const [ formData, setFormData ] = useState({
-        'email' : '',
-        'password' : ''
-    })
+    const { menuOpen, setMenuOpen, isAuthenticated, category } = useAppContext();
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const [ searchValue, setSearchValue ] = useState(searchParams.get("search") || "")
-    const [successMessage, setSuccessMessage] = useState(null);
-    const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,77 +26,6 @@ export default function Header() {
             document.body.style.overflow = "auto";
         };
     }, [menuOpen]);
-
-    useEffect(() => {
-        const isProfile = window.innerWidth >= 768; // md breakpoint
-
-        if (profileOpen && !isProfile) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "auto";
-        }
-
-        return () => {
-            document.body.style.overflow = "auto";
-        };
-    }, [profileOpen]);
-
-    const handleChange = (e) => {
-        const {name, value} = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name] : value
-        }))
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        try {
-            const response = await api.post("/auth/login", formData);
-            const user = response.data.user
-            setUserData(user)
-            setSuccessMessage(response.data.message)
-            setErrorMessage(null)
-            setIsAuthenticated(true)
-
-            // Promote an already-granted, anonymously-registered FCM token
-            // to this account so personal notifications can reach it too.
-            syncTokenIfGranted();
-
-            const cart = JSON.parse(localStorage.getItem("cart")) || []
-
-            if (cart.length > 0) {
-                await api.post("/cart-sync", {
-                    items: cart,
-                });
-
-                localStorage.removeItem("cart");
-            }
-
-            setProfileOpen(false)
-
-            navigate('/dashboard')
-            
-        } catch (error) {
-            setErrorMessage(
-                error.response?.data?.message || "Something went wrong. Please try again."
-            );
-            setSuccessMessage(null)
-        }
-    }
-
-    const handleLogout = async () => {
-        try {
-            await removeCurrentToken();
-            const response = await api.post("/auth/logout");
-            setIsAuthenticated(false)
-            setProfileOpen(false)
-            navigate('/')
-        } catch (err) {
-            console.log(err)
-        }
-    }
 
     const handleSearch = async () => {
         try {
@@ -194,11 +117,9 @@ export default function Header() {
                         </button>
                     </div>
 
-                    <div className="flex gap-2">
-                        <i
-                            onClick={() => setProfileOpen(true)}
-                            className="fi fi-rr-user text-2xl text-[#104185] hover:cursor-pointer"
-                        ></i>
+                    <div className="flex gap-3 items-center relative">
+                        {isAuthenticated && <NotificationMenu />}
+                        <ProfileMenu />
                         <Link to="/cart">
                             <i className="fi fi-rr-shopping-cart text-2xl text-[#104185] hover:cursor-pointer"></i>
                         </Link>
@@ -226,7 +147,7 @@ export default function Header() {
                     </div>
                 </div>
             </div>
-            
+
             {/* Menu */}
             {menuOpen && (
                 <div className="fixed inset-0 md:w-80 z-50 bg-white overflow-y-auto overscroll-none">
@@ -245,87 +166,6 @@ export default function Header() {
                     </div>
                 </div>
             )}
-
-            {/* Profile / Login */}
-            {
-                profileOpen && (
-                    <>
-                        {
-                            !isAuthenticated ? (
-                                <div className="bg-white fixed inset-y-0 right-0 w-96 z-50 overflow-y-auto overscroll-none">
-                                    <div className="flex flex-col px-10 pb-10 pt-6">
-                                        <div className="text-[#132A36] flex flex-row gap-2">
-                                            <i onClick={() => setProfileOpen(false)} className="fi fi-rr-cross-small text-4xl md:left-60 text-[#132A36] hover:cursor-pointer"></i>
-                                        </div>
-                                        <div className="flex flex-col gap-6 pl-6 py-10 text-[#132A36] items-center">
-                                            <h1 className="text-3xl font-semibold">LOGIN</h1>
-                                            <p className="text-sm">Enter credentials to access your account</p>
-                                            <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-full md:max-w-[500px]">
-                                                <div className="flex flex-col gap-4">
-                                                    <p className="font-semibold">Email</p>
-                                                    <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="eg. johndoe@gmail.com" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg"/>
-                                                </div>
-                                                <div className="flex flex-col gap-4">
-                                                    <p className="font-semibold">Password</p>
-                                                    <input name="password" value={formData.password} onChange={handleChange} type="password" placeholder="********" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg"/>
-                                                </div>
-                                                <button type="submit" className="bg-[#132A36] text-white font-semibold mt-5 py-2 rounded-lg">LOG IN</button>
-                                            </form>
-
-                                            {/* Response Messages */}
-                                            <div className="flex flex-col items-center pb-4">
-                                                {
-                                                    errorMessage && (
-                                                        <div className="text-white whitespace-pre-line text-start font-semibold bg-red-600 flex flex-col gap-2 px-2 w-full md:max-w-[500px] py-2 border-[1px] rounded-lg">
-                                                            {errorMessage}
-                                                        </div>
-                                                    )
-                                                }
-                                            </div>
-
-                                            <p className="text-md">
-                                                Doesn't have an account?
-                                            </p>
-                                            <Link onClick={() => setProfileOpen(false)} to='/accounts/register' className="bg-white border-[1px] border-[#132A36] w-full md:max-w-[500px] text-[#132A36] font-semibold py-2 rounded-lg text-center">
-                                                CREATE ACCOUNT
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="fixed top-0 z-50 md:w-60 md:top-28 md:border-[1px] md:border-slate-400 md:right-12 md:rounded-lg w-full bg-slate-100 shadow-xl">
-                                    <div className="flex flex-col px-10 pt-2">
-                                        <div className="text-[#132A36] flex flex-row gap-2">
-                                            <i onClick={() => setProfileOpen(false)} className="fi fi-rr-cross-small text-4xl text-[#132A36] hover:cursor-pointer"></i>
-                                        </div>
-                                        <div className="flex flex-col items-center py-6">
-                                            <div className="flex flex-col gap-4">
-                                                <div className="flex flex-row gap-2 items-start">
-                                                    <i className="fi fi-rr-settings mt-[2px]"></i>
-                                                    <Link to='/dashboard' onClick={() => setProfileOpen(false)}>Dashboard</Link>
-                                                </div>
-                                                <p className="bg-slate-200 w-full py-[1px]"></p>
-                                                <div className="flex flex-row gap-2 items-start">
-                                                    <i className="fi fi-rr-settings mt-[2px]"></i>
-                                                    <p>Profile Settings</p>
-                                                </div>
-                                                <p className="bg-slate-200 w-full py-[1px]"></p>
-                                                <div className="flex flex-row gap-2 items-start">
-                                                    <i className="fi fi-rr-leave mt-[2px]"></i>
-                                                    <button type="button" onClick={handleLogout}>Logout</button>
-                                                </div>
-                                            </div>
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                            )
-                        }
-                    </>
-                )
-            }
-            
         </>
     )
 }

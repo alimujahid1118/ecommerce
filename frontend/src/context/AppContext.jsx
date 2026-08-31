@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
 
 const AppContext = createContext();
@@ -6,7 +6,6 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
 
     const [menuOpen, setMenuOpen] = useState(false);
-    const [profileOpen, setProfileOpen] = useState(false);
     const [category, setCategory] = useState([])
     const [ordersLoading, setOrdersLoading] = useState(true);
 
@@ -16,6 +15,9 @@ export function AppProvider({ children }) {
     const [totalPages, setTotalPages] = useState(null)
 
     const [orders, setOrders] = useState(null)
+
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const [userData, setUserData] = useState({
         firstName: "",
@@ -81,13 +83,66 @@ export function AppProvider({ children }) {
         getOrders()
     }, [])
 
+    const refreshNotifications = useCallback(async () => {
+        try {
+            const response = await api.get("/notifications");
+            setNotifications(response.data.notifications);
+            setUnreadCount(response.data.unreadCount);
+        } catch (error) {
+            console.log(error);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        const getNotifications = async () => {
+            try {
+                const response = await api.get("/notifications");
+                setNotifications(response.data.notifications);
+                setUnreadCount(response.data.unreadCount);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        getNotifications();
+    }, [isAuthenticated]);
+
+    const markNotificationRead = useCallback(async (id) => {
+        setNotifications((prev) => {
+            const target = prev.find((notification) => notification._id === id);
+            if (!target || target.read) return prev;
+
+            setUnreadCount((count) => Math.max(0, count - 1));
+            return prev.map((notification) =>
+                notification._id === id ? { ...notification, read: true } : notification
+            );
+        });
+
+        try {
+            await api.patch(`/notifications/${id}/read`);
+        } catch (error) {
+            console.log(error);
+        }
+    }, []);
+
+    const markAllNotificationsRead = useCallback(async () => {
+        setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+        setUnreadCount(0);
+
+        try {
+            await api.patch("/notifications/read-all");
+        } catch (error) {
+            console.log(error);
+        }
+    }, []);
+
     return (
         <AppContext.Provider
             value={{
                 menuOpen,
                 setMenuOpen,
-                profileOpen,
-                setProfileOpen,
 
                 isAuthenticated,
                 setIsAuthenticated,
@@ -109,7 +164,13 @@ export function AppProvider({ children }) {
                 orders,
                 setOrders,
 
-                ordersLoading
+                ordersLoading,
+
+                notifications,
+                unreadCount,
+                refreshNotifications,
+                markNotificationRead,
+                markAllNotificationsRead
             }}
         >
             {children}

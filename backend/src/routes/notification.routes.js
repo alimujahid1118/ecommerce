@@ -9,4 +9,13 @@ notificationRouter.post('/notifications/promotions', notificationController.crea
 // GET /api/notifications/promotions
 notificationRouter.get('/notifications/promotions', notificationController.getPromotions);
 
+// GET /api/notifications
+notificationRouter.get('/notifications', notificationController.getNotifications);
+
+// PATCH /api/notifications/read-all
+notificationRouter.patch('/notifications/read-all', notificationController.markAllNotificationsRead);
+
+// PATCH /api/notifications/:id/read
+notificationRouter.patch('/notifications/:id/read', notificationController.markNotificationRead);
+
 export default notificationRouter;
