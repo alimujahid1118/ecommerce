@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
 const Homepage = lazy(() => import("./pages/Hompage")) 
 const Register = lazy(() => import("./pages/Register"))
@@ -14,6 +14,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import Orders from "./pages/Orders";
 import ManageUsers from "./pages/ManageUsers";
 import NotificationPermissionPopup from "./components/NotificationPermissionPopup";
+import NotificationToast from "./components/NotificationToast";
 import { onMessage } from "firebase/messaging";
 import { messaging } from "./firebase/firebase";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
@@ -25,10 +26,22 @@ const Cart = lazy(() => import("./pages/Cart"))
 const Promotions = lazy(() => import("./pages/Promotions"))
 
 function App() {
+    const [toasts, setToasts] = useState([]);
+
+    const dismissToast = useCallback((id) => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, []);
 
     useEffect(() => {
         const unsubscribe = onMessage(messaging, (payload) => {
-            alert(`${payload.notification?.title}\n\n${payload.notification?.body}`)
+            setToasts((prev) => [
+                ...prev,
+                {
+                    id: crypto.randomUUID(),
+                    title: payload.notification?.title,
+                    body: payload.notification?.body,
+                },
+            ]);
         })
 
         return () => unsubscribe()
@@ -39,6 +52,7 @@ function App() {
             <Header />
 
             <NotificationPermissionPopup />
+            <NotificationToast toasts={toasts} onDismiss={dismissToast} />
 
             <main className="flex-1">
                 <Suspense>
