@@ -1,6 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
+import { removeCurrentToken } from "../firebase/tokenSync";
 
 export default function DashboardAside() {
 
@@ -8,6 +9,7 @@ export default function DashboardAside() {
     const navigate = useNavigate();
     const handleLogout = async () => {
         try {
+            await removeCurrentToken();
             const response = await api.post("/auth/logout");
             setIsAuthenticated(false)
             navigate("/");
@@ -47,6 +49,10 @@ export default function DashboardAside() {
                         <p className="w-full bg-slate-200 py-[0.5px]"></p>
                         <Link to="/dashboard/users" className="px-6">
                             Manage Users
+                        </Link>
+                        <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                        <Link to="/dashboard/promotions" className="px-6">
+                            Promotions
                         </Link>
                     </>
                 )

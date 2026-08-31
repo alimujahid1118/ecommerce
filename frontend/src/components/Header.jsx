@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
 import { useLocation } from "react-router-dom";
+import { removeCurrentToken, syncTokenIfGranted } from "../firebase/tokenSync";
 
 export default function Header() {
 
@@ -65,6 +66,10 @@ export default function Header() {
             setErrorMessage(null)
             setIsAuthenticated(true)
 
+            // Promote an already-granted, anonymously-registered FCM token
+            // to this account so personal notifications can reach it too.
+            syncTokenIfGranted();
+
             const cart = JSON.parse(localStorage.getItem("cart")) || []
 
             if (cart.length > 0) {
@@ -89,6 +94,7 @@ export default function Header() {
 
     const handleLogout = async () => {
         try {
+            await removeCurrentToken();
             const response = await api.post("/auth/logout");
             setIsAuthenticated(false)
             setProfileOpen(false)

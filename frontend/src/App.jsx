@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 const Homepage = lazy(() => import("./pages/Hompage")) 
 const Register = lazy(() => import("./pages/Register"))
@@ -13,17 +13,32 @@ import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Orders from "./pages/Orders";
 import ManageUsers from "./pages/ManageUsers";
-const UpdateCategory = lazy(() => import("./pages/UpdateCategory")) 
+import NotificationPermissionPopup from "./components/NotificationPermissionPopup";
+import { onMessage } from "firebase/messaging";
+import { messaging } from "./firebase/firebase";
+const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
 const Product = lazy(() => import("./pages/Product"))
-const AllProducts = lazy(() => import("./pages/AllProducts")) 
-const UpdateProduct = lazy(() => import("./pages/UpdateProduct")) 
-const ProductDetails = lazy(() => import("./pages/ProductDetails")) 
-const Cart = lazy(() => import("./pages/Cart")) 
+const AllProducts = lazy(() => import("./pages/AllProducts"))
+const UpdateProduct = lazy(() => import("./pages/UpdateProduct"))
+const ProductDetails = lazy(() => import("./pages/ProductDetails"))
+const Cart = lazy(() => import("./pages/Cart"))
+const Promotions = lazy(() => import("./pages/Promotions"))
 
 function App() {
+
+    useEffect(() => {
+        const unsubscribe = onMessage(messaging, (payload) => {
+            alert(`${payload.notification?.title}\n\n${payload.notification?.body}`)
+        })
+
+        return () => unsubscribe()
+    }, [])
+
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
+
+            <NotificationPermissionPopup />
 
             <main className="flex-1">
                 <Suspense>
@@ -43,6 +58,7 @@ function App() {
                         <Route path="/payment-success" element={<PaymentSuccess />} />
                         <Route path="/dashboard/orders" element={<Orders />} />
                         <Route path="/dashboard/users" element={<ManageUsers />} />
+                        <Route path="/dashboard/promotions" element={<Promotions />} />
                     </Routes>
                 </Suspense>
             </main>

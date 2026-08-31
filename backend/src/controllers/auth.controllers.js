@@ -12,6 +12,7 @@ import slugify from "slugify";
 import cartModel from "../models/cart.model.js";
 import Stripe from "stripe";
 import orderModel from "../models/order.model.js";
+import { sendToTopic, sendToUser } from "../services/notification.service.js";
 
 export async function register(req, res) {
 
@@ -464,6 +465,11 @@ export async function createCategory(req, res) {
                 imagePublicId: result.public_id
             })
 
+            await sendToTopic("all_users", {
+                title: `🔥🔥 New category added 🔥🔥`,
+                body: `New Category ${name} has been added to the store.`
+            })
+
             return res.status(201).json(category)
         } catch (error) {
             if (error.name === "TokenExpiredError") {
@@ -666,6 +672,11 @@ export async function createProduct(req, res) {
                     author: user.id,
                     stock: stock,
                     category: category
+                })
+
+                await sendToTopic("all_users", {
+                    title: `🔥🔥 New product added 🔥🔥`,
+                    body: `New Product ${name} has been added to the store.`
                 })
 
                 const getProduct = await productModel.findById(product._id).populate("author", "firstName lastName").populate("category", "name").lean()
@@ -1205,6 +1216,15 @@ export async function verifyPayment(req, res) {
             total: session.amount_total / 100,
             orderStatus: "processing",
         });
+
+        try {
+            await sendToUser(user.id, {
+                title: "Order placed successfully",
+                body: `Your order ${order.orderNumber} has been placed.`
+            });
+        } catch (error) {
+            console.error("Failed to send order notification:", error);
+        }
 
         await Promise.all(
             userCart.map(async (item) => {
