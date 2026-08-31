@@ -8,10 +8,6 @@ if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET not found in environment variables.");
 }
 
-if (!process.env.PORT) {
-    throw new Error("PORT not found in environment variables.");
-}
-
 if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI not found in environment variables.");
 }
