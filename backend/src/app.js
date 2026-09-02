@@ -4,6 +4,7 @@ import morgan from "morgan";
 import authRouter from "./routes/auth.routes.js";
 import tokenRouter from "./routes/token.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
+import chatRouter from "./routes/chat.routes.js";
 import cors from "cors"
 import dotenv from "dotenv";
 
@@ -24,5 +25,6 @@ app.use(cors({
 app.use(('/api'), authRouter)
 app.use(('/api'), tokenRouter)
 app.use(('/api'), notificationRouter)
+app.use(('/api'), chatRouter)
 
 export default app;

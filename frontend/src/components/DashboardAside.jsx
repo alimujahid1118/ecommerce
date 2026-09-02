@@ -54,6 +54,10 @@ export default function DashboardAside() {
                         <Link to="/dashboard/promotions" className="px-6">
                             Promotions
                         </Link>
+                        <p className="w-full bg-slate-200 py-[0.5px]"></p>
+                        <Link to="/dashboard/chat" className="px-6">
+                            Support Chat
+                        </Link>
                     </>
                 )
             }

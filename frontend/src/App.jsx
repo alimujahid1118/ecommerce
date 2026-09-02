@@ -18,7 +18,9 @@ import NotificationToast from "./components/NotificationToast";
 import { onMessage } from "firebase/messaging";
 import { messaging } from "./firebase/firebase";
 import { useAppContext } from "./context/AppContext";
+import ChatWidget from "./chat/ChatWidget";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
+const AdminChat = lazy(() => import("./pages/AdminChat"))
 const Product = lazy(() => import("./pages/Product"))
 const AllProducts = lazy(() => import("./pages/AllProducts"))
 const UpdateProduct = lazy(() => import("./pages/UpdateProduct"))
@@ -77,11 +79,14 @@ function App() {
                         <Route path="/dashboard/orders" element={<Orders />} />
                         <Route path="/dashboard/users" element={<ManageUsers />} />
                         <Route path="/dashboard/promotions" element={<Promotions />} />
+                        <Route path="/dashboard/chat" element={<AdminChat />} />
                     </Routes>
                 </Suspense>
             </main>
 
             <Footer />
+
+            <ChatWidget />
         </div>
     );
 }

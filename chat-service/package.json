@@ -1,0 +1,22 @@
+{
+  "name": "chat-service",
+  "version": "1.0.0",
+  "description": "Standalone customer support chat service (Express + Socket.IO + MongoDB) for the MERN e-commerce project.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.4",
+    "socket.io": "^4.8.3"
+  }
+}
