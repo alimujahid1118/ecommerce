@@ -19,6 +19,15 @@ chatRouter.get("/conversations/:conversationId", chatController.getConversation)
 // GET /api/chat/conversations/:conversationId/messages — paginated history
 chatRouter.get("/conversations/:conversationId/messages", chatController.getMessages);
 
+// POST /api/chat/conversations/:conversationId/accept — admin handoff
+chatRouter.post("/conversations/:conversationId/accept", requireAdmin, chatController.acceptConversation);
+
+// DELETE /api/chat/conversations/:conversationId/messages — clear both sides' history
+chatRouter.delete("/conversations/:conversationId/messages", requireAdmin, chatController.clearConversation);
+
+// POST /api/chat/conversations/:conversationId/close — return the user to AI mode
+chatRouter.post("/conversations/:conversationId/close", requireAdmin, chatController.closeConversation);
+
 // POST /api/chat/conversations/:conversationId/messages — REST send fallback
 chatRouter.post("/conversations/:conversationId/messages", chatController.postMessage);
 

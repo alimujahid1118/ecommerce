@@ -68,6 +68,37 @@ export async function postMessage(req, res) {
         text
     });
 
+    if (!req.user.isAdmin && chatService.conversationMode(conversation) === "ai") {
+        if (chatService.isHumanSupportRequest(text)) {
+            await chatService.updateConversationMode(conversation._id, "waiting_for_admin");
+            const summary = await chatService.buildConversationSummary(conversation._id);
+            const io = req.app.get("io");
+            if (io && summary) io.to("admins").emit("conversation:updated", summary);
+            return res.status(201).json({ message, messages: [message], mode: "waiting_for_admin" });
+        }
+
+        try {
+            const replyText = await chatService.getLlmReply(conversation._id);
+            const assistantMessage = await chatService.saveAssistantMessage({
+                conversation,
+                text: replyText
+            });
+            return res.status(201).json({
+                message,
+                aiMessage: assistantMessage,
+                messages: [message, assistantMessage],
+                mode: "ai"
+            });
+        } catch (error) {
+            console.error("LLM response failed:", error);
+            return res.status(503).json({
+                message: "Your message was saved, but the assistant is temporarily unavailable.",
+                userMessage: message,
+                mode: "ai"
+            });
+        }
+    }
+
     const io = req.app.get("io");
     if (io) {
         io.to(chatService.roomName(conversation._id)).emit("message:new", message);
@@ -106,4 +137,62 @@ export async function markRead(req, res) {
     }
 
     return res.status(200).json({ updated: modifiedCount, readAt });
+}
+
+export async function acceptConversation(req, res) {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Only admins can accept conversations." });
+    }
+
+    const conversation = await chatService.getConversationForViewer(req.params.conversationId, req.user);
+    const updated = await chatService.updateConversationMode(conversation._id, "human");
+    const io = req.app.get("io");
+
+    if (io) {
+        const summary = await chatService.buildConversationSummary(conversation._id);
+        if (summary) io.to("admins").emit("conversation:updated", summary);
+    }
+
+    return res.status(200).json({ conversation: updated });
+}
+
+export async function clearConversation(req, res) {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Only admins can clear conversations." });
+    }
+
+    const conversation = await chatService.getConversationForViewer(req.params.conversationId, req.user);
+    const updated = await chatService.clearConversationHistory(conversation._id);
+    const io = req.app.get("io");
+
+    if (io) {
+        io.to(chatService.roomName(conversation._id)).emit("conversation:cleared", {
+            conversationId: conversation._id.toString()
+        });
+        const summary = await chatService.buildConversationSummary(conversation._id);
+        if (summary) io.to("admins").emit("conversation:updated", summary);
+    }
+
+    return res.status(200).json({ conversation: updated });
+}
+
+export async function closeConversation(req, res) {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Only admins can close conversations." });
+    }
+
+    const conversation = await chatService.getConversationForViewer(req.params.conversationId, req.user);
+    const updated = await chatService.updateConversationMode(conversation._id, "ai");
+    const io = req.app.get("io");
+
+    if (io) {
+        io.to(chatService.roomName(conversation._id)).emit("conversation:mode-updated", {
+            conversationId: conversation._id.toString(),
+            mode: "ai"
+        });
+        const summary = await chatService.buildConversationSummary(conversation._id);
+        if (summary) io.to("admins").emit("conversation:updated", summary);
+    }
+
+    return res.status(200).json({ conversation: updated });
 }

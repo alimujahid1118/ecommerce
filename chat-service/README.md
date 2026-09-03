@@ -1,5 +1,31 @@
 # Chat Service
 
+Standalone customer support backend for the MERN e-commerce application. It
+serves the REST chat API and Socket.IO from one independently deployable Node
+service, using the main application's `users` collection and its own chat
+collections.
+
+## AI and handoff
+
+Normal customer messages use the `ai` conversation mode. The service saves the
+user message, sends bounded conversation history to Groq, saves the assistant
+reply, and returns both persisted messages through the Socket.IO acknowledgement.
+
+Human-support phrases switch a conversation to `waiting_for_admin` without
+calling Groq. Admins see the updated conversation and unread count. Opening the
+conversation joins its room and changes the mode to `human`; subsequent
+messages use the existing admin/customer Socket.IO flow.
+
+The Groq key is server-only. Configure `GROQ_API_KEY`, optionally
+`GROQ_MODEL`, and `LLM_HISTORY_LIMIT` in the service environment. Never put
+these values in the React application.
+
+The admin handoff REST endpoint is:
+
+```text
+POST /api/chat/conversations/:conversationId/accept
+```
+
 Standalone customer support chat backend (Express + Socket.IO + MongoDB) for the
 MERN e-commerce project. It deploys independently (e.g. on Render) and shares
 only two things with the main e-commerce backend:

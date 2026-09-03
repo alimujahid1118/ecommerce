@@ -17,6 +17,7 @@ export default function ChatWidget() {
     const [open, setOpen] = useState(false);
     const [conversationId, setConversationId] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [mode, setMode] = useState("ai");
     const [hasMore, setHasMore] = useState(false);
     const [unread, setUnread] = useState(0);
     const [text, setText] = useState("");
@@ -38,6 +39,7 @@ export default function ChatWidget() {
         const { data: convData } = await chatApi.get("/me/conversation");
         const id = convData.conversation._id;
         setConversationId(id);
+        setMode(convData.conversation.mode || "ai");
         setUnread(openRef.current ? 0 : convData.unreadCount);
 
         const { data: msgData } = await chatApi.get(`/conversations/${id}/messages`, {
@@ -85,9 +87,22 @@ export default function ChatWidget() {
             }
         };
 
+        const handleConversationCleared = ({ conversationId: clearedId }) => {
+            if (!clearedId) return;
+            setMessages([]);
+            setHasMore(false);
+            setUnread(0);
+        };
+
+        const handleConversationModeUpdated = ({ conversationId: updatedId, mode: updatedMode }) => {
+            if (updatedId && updatedMode) setMode(updatedMode);
+        };
+
         socket.on("connect", handleConnect);
         socket.on("message:new", handleNewMessage);
         socket.on("messages:read", handleMessagesRead);
+        socket.on("conversation:cleared", handleConversationCleared);
+        socket.on("conversation:mode-updated", handleConversationModeUpdated);
 
         if (socket.connected && !initializedRef.current) {
             handleConnect();
@@ -98,6 +113,8 @@ export default function ChatWidget() {
             socket.off("connect", handleConnect);
             socket.off("message:new", handleNewMessage);
             socket.off("messages:read", handleMessagesRead);
+            socket.off("conversation:cleared", handleConversationCleared);
+            socket.off("conversation:mode-updated", handleConversationModeUpdated);
             initializedRef.current = false;
             closeChatSocket();
         };
@@ -133,9 +150,15 @@ export default function ChatWidget() {
         setSending(true);
         getChatSocket().emit("message:send", { text: value }, (ack) => {
             setSending(false);
-            if (ack?.ok) {
-                setMessages((prev) => [...prev, ack.message]);
+            if (ack?.messages) {
+                setMessages((prev) => {
+                    const existing = new Set(prev.map((message) => message._id));
+                    return [...prev, ...ack.messages.filter((message) => !existing.has(message._id))];
+                });
+                setMode(ack.mode || mode);
                 setText("");
+            } else if (!ack?.ok && ack?.userMessage) {
+                setMessages((prev) => [...prev, ack.userMessage]);
             } else {
                 console.log(ack?.message || "Failed to send message.");
             }
@@ -167,7 +190,9 @@ export default function ChatWidget() {
             {open && (
                 <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl">
                     <div className="flex items-center justify-between bg-[#132A36] px-4 py-3 text-white">
-                        <span className="font-semibold">Support Chat</span>
+                        <span className="font-semibold">
+                            {mode === "ai" ? "AI Support" : mode === "waiting_for_admin" ? "Waiting for support" : "Support Chat"}
+                        </span>
                         <button onClick={() => setOpen(false)} aria-label="Close chat" className="text-lg leading-none">
                             ✕
                         </button>

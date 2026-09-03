@@ -253,6 +253,28 @@ export default function AdminChat() {
         }
     };
 
+    const handleClearConversation = async () => {
+        if (!activeId || !window.confirm("Clear this chat history for both the user and admin?")) return;
+
+        try {
+            await chatApi.delete(`/conversations/${activeId}/messages`);
+            setMessages([]);
+            setHasMore(false);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const handleCloseConnection = async () => {
+        if (!activeId || !window.confirm("Close this admin connection and return the user to AI support?")) return;
+
+        try {
+            await chatApi.post(`/conversations/${activeId}/close`);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     const activeConversation = conversations.find((c) => c._id === activeId);
 
     return (
@@ -309,7 +331,7 @@ export default function AdminChat() {
                                             {conversation.lastMessage || "No messages yet"}
                                         </p>
                                         <span className="shrink-0 text-[10px] text-slate-400">
-                                            {formatTime(conversation.lastMessageAt)}
+                                            {conversation.mode === "waiting_for_admin" ? "Waiting" : formatTime(conversation.lastMessageAt)}
                                         </span>
                                     </div>
                                 </button>
@@ -326,12 +348,36 @@ export default function AdminChat() {
                         ) : (
                             <>
                                 <div className="flex items-center justify-between border-b border-slate-300 px-4 py-3">
-                                    <span className="font-semibold text-[#132A36]">
-                                        {activeConversation ? displayName(activeConversation) : ""}
-                                    </span>
-                                    <span className="text-xs text-slate-400">
-                                        {activeConversation?.online ? "Online" : "Offline"}
-                                    </span>
+                                    <div>
+                                        <span className="font-semibold text-[#132A36]">
+                                            {activeConversation ? displayName(activeConversation) : ""}
+                                        </span>
+                                        <span className="ml-3 text-xs text-slate-400">
+                                            {activeConversation?.mode === "waiting_for_admin"
+                                                ? "Waiting for admin"
+                                                : activeConversation?.mode === "ai"
+                                                    ? "AI support"
+                                                    : activeConversation?.online ? "Online" : "Offline"}
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleClearConversation}
+                                            className="rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50"
+                                        >
+                                            Clear chat
+                                        </button>
+                                        {activeConversation?.mode !== "ai" && (
+                                            <button
+                                                type="button"
+                                                onClick={handleCloseConnection}
+                                                className="rounded-md border border-slate-300 px-3 py-2 text-xs font-semibold text-[#132A36] hover:bg-slate-50"
+                                            >
+                                                Close connection
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div ref={listRef} className="flex-1 overflow-y-auto bg-slate-50 px-4 py-3">

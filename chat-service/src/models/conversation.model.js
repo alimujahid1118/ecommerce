@@ -21,6 +21,11 @@ const conversationSchema = new mongoose.Schema({
         enum: ["open", "closed"],
         default: "open"
     },
+    'mode': {
+        type: String,
+        enum: ["ai", "waiting_for_admin", "human"],
+        default: "ai"
+    },
     'lastMessage': {
         type: String,
         default: ""

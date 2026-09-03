@@ -10,11 +10,11 @@ const messageSchema = new mongoose.Schema({
     'senderId': {
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
-        required: [true, "senderId is required."]
+        default: null
     },
     'senderRole': {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "assistant", "admin"],
         required: [true, "senderRole is required."]
     },
     'message': {

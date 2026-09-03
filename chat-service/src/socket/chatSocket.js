@@ -82,6 +82,12 @@ export default function initChatSocket(httpServer) {
                 const conversation = await chatService.getConversationForViewer(payload?.conversationId, user);
                 socket.join(chatService.roomName(conversation._id));
 
+                if (chatService.conversationMode(conversation) !== "human") {
+                    await chatService.updateConversationMode(conversation._id, "human");
+                    const summary = await chatService.buildConversationSummary(conversation._id);
+                    if (summary) io.to("admins").emit("conversation:updated", summary);
+                }
+
                 if (typeof ack === "function") ack({ ok: true });
             } catch (error) {
                 if (typeof ack === "function") {
@@ -117,6 +123,45 @@ export default function initChatSocket(httpServer) {
                     sender: user,
                     text
                 });
+
+                if (!user.isAdmin && chatService.conversationMode(conversation) === "ai") {
+                    if (chatService.isHumanSupportRequest(text)) {
+                        await chatService.updateConversationMode(conversation._id, "waiting_for_admin");
+                        const summary = await chatService.buildConversationSummary(conversation._id);
+                        if (summary) io.to("admins").emit("conversation:updated", summary);
+                        if (typeof ack === "function") ack({
+                            ok: true,
+                            message,
+                            messages: [message],
+                            mode: "waiting_for_admin"
+                        });
+                        return;
+                    }
+
+                    try {
+                        const replyText = await chatService.getLlmReply(conversation._id);
+                        const assistantMessage = await chatService.saveAssistantMessage({
+                            conversation,
+                            text: replyText
+                        });
+                        if (typeof ack === "function") ack({
+                            ok: true,
+                            message,
+                            aiMessage: assistantMessage,
+                            messages: [message, assistantMessage],
+                            mode: "ai"
+                        });
+                    } catch (error) {
+                        console.error("LLM response failed:", error);
+                        if (typeof ack === "function") ack({
+                            ok: false,
+                            message: "Your message was saved, but the assistant is temporarily unavailable.",
+                            userMessage: message,
+                            mode: "ai"
+                        });
+                    }
+                    return;
+                }
 
                 // Real-time relay to everyone else in the room (the sender gets
                 // the saved message back through the ack instead).
