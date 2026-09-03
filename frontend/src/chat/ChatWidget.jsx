@@ -186,11 +186,11 @@ export default function ChatWidget() {
     const lastOwnRead = [...messages].reverse().find((m) => m.senderRole === "user");
 
     return (
-        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
+        <div className="fixed bottom-2 right-2 z-50 flex max-w-[calc(100vw-1rem)] flex-col items-end sm:bottom-5 sm:right-5">
             {open && (
-                <div className="mb-3 flex h-[28rem] w-80 flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl">
+            <div className="mb-3 flex h-[min(28rem,calc(100vh-5rem))] max-h-[calc(100vh-5rem)] w-[calc(100vw-1rem)] max-w-80 flex-col overflow-hidden rounded-lg border border-slate-300 bg-white shadow-xl">
                     <div className="flex items-center justify-between bg-[#132A36] px-4 py-3 text-white">
-                        <span className="font-semibold">
+                        <span className="truncate pr-2 font-semibold">
                             {mode === "ai" ? "AI Support" : mode === "waiting_for_admin" ? "Waiting for support" : "Support Chat"}
                         </span>
                         <button onClick={() => setOpen(false)} aria-label="Close chat" className="text-lg leading-none">
@@ -246,12 +246,12 @@ export default function ChatWidget() {
                             onChange={(event) => setText(event.target.value)}
                             placeholder="Type message..."
                             maxLength={2000}
-                            className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#104185]"
+                            className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#104185]"
                         />
                         <button
                             type="submit"
                             disabled={sending || !text.trim()}
-                            className="rounded-md bg-[#104185] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            className="shrink-0 rounded-md bg-[#104185] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
                         >
                             Send
                         </button>
