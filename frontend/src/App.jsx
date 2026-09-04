@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
 const Homepage = lazy(() => import("./pages/Hompage")) 
@@ -20,6 +20,8 @@ import { messaging } from "./firebase/firebase";
 import { useAppContext } from "./context/AppContext";
 import ChatWidget from "./chat/ChatWidget";
 import Cursor from "./components/Cursor";
+import SEO from "./components/SEO";
+import NotFound from "./pages/NotFound";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
 const AdminChat = lazy(() => import("./pages/AdminChat"))
 const Product = lazy(() => import("./pages/Product"))
@@ -32,6 +34,36 @@ const Promotions = lazy(() => import("./pages/Promotions"))
 function App() {
     const [toasts, setToasts] = useState([]);
     const { refreshNotifications } = useAppContext();
+    const location = useLocation();
+
+    const privateRoute = location.pathname.startsWith("/dashboard") ||
+        ["/cart", "/checkout", "/payment-success", "/verify-email", "/accounts/register"].includes(location.pathname);
+    const productListing = location.pathname === "/products";
+    const hasListingFilters = productListing && Boolean(location.search);
+    const pageMeta = productListing
+        ? {
+            title: hasListingFilters ? "Product Search | E Shop" : "Shop Products | E Shop",
+            description: hasListingFilters
+                ? "Browse product search and filter results from E Shop."
+                : "Browse tech accessories, home upgrades, and everyday essentials from E Shop.",
+            canonicalPath: "/products",
+            noindex: hasListingFilters,
+        }
+        : location.pathname === "/"
+            ? {
+                title: "E Shop | Smart Essentials for Everyday Life",
+                description: "Shop premium tech accessories, home upgrades, and everyday essentials from E Shop.",
+                canonicalPath: "/",
+                noindex: false,
+            }
+            : {
+                title: privateRoute ? "E Shop Account" : "E Shop",
+                description: privateRoute
+                    ? "Manage your E Shop account and orders."
+                    : "Shop products from E Shop.",
+                canonicalPath: location.pathname,
+                noindex: privateRoute,
+            };
 
     const dismissToast = useCallback((id) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -57,6 +89,7 @@ function App() {
     return (
         <>
         <Cursor />
+        <SEO {...pageMeta} />
         <div className="min-h-screen flex flex-col">
             <Header />
 
@@ -83,6 +116,7 @@ function App() {
                         <Route path="/dashboard/users" element={<ManageUsers />} />
                         <Route path="/dashboard/promotions" element={<Promotions />} />
                         <Route path="/dashboard/chat" element={<AdminChat />} />
+                        <Route path="*" element={<NotFound />} />
                     </Routes>
                 </Suspense>
             </main>

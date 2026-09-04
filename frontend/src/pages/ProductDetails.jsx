@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom"
 import api from "../api/axios.js"
 import { useAppContext } from "../context/AppContext"
+import SEO from "../components/SEO";
 
 export default function ProductDetails() {
 
@@ -9,6 +10,30 @@ export default function ProductDetails() {
     const [ getProductBySlug, setGetProductBySlug] = useState(null);
     const [loading, setLoading] = useState(true);
     const { slug } = useParams();
+    const productTitle = getProductBySlug
+        ? `${getProductBySlug.name} | E Shop`
+        : "Product Details | E Shop";
+    const productDescription = getProductBySlug
+        ? `Shop ${getProductBySlug.name} from E Shop for $${getProductBySlug.price}.`
+        : "View product details, pricing, and availability at E Shop.";
+    const structuredData = getProductBySlug
+        ? {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: getProductBySlug.name,
+            image: [getProductBySlug.imageUrl],
+            category: getProductBySlug.category?.name,
+            offers: {
+                "@type": "Offer",
+                priceCurrency: "USD",
+                price: getProductBySlug.price,
+                availability: getProductBySlug.stock > 0
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+                url: new URL(`/product/${slug}`, window.location.origin).href,
+            },
+        }
+        : undefined;
 
     useEffect(() => {
         const getProduct = async () => {
@@ -87,9 +112,21 @@ export default function ProductDetails() {
 
     return (
         <div className="min-h-screen bg-slate-50 px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
+            <SEO
+                title={productTitle}
+                description={productDescription}
+                canonicalPath={`/product/${slug}`}
+                structuredData={structuredData}
+            />
             <div className="mx-auto max-w-6xl">
                 <div className="mb-6 flex items-center gap-2 text-sm text-slate-500">
                     <Link to="/products" className="transition hover:text-[#104185]">Products</Link>
+                    <i className="fi fi-rr-angle-small-right text-xs" />
+                    {getProductBySlug?.category?.slug && (
+                        <Link to={`/products?category=${getProductBySlug.category.slug}`} className="transition hover:text-[#104185]">
+                            {getProductBySlug.category.name}
+                        </Link>
+                    )}
                     <i className="fi fi-rr-angle-small-right text-xs" />
                     <span className="truncate text-slate-800">{getProductBySlug?.name}</span>
                 </div>
