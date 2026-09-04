@@ -118,7 +118,7 @@ export default function Checkout () {
                 Payment was cancelled. Your billing information has been saved. You can try again.
             </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-6">
+        <div className="grid grid-cols-1 bg-white md:grid-cols-2 gap-4 px-4 py-6">
             <div className="bg-white border-[1px] p-4 border-slate-300 rounded-lg text-[#132A36] shadow-md">
                 <h1 className="font-semibold text-2xl">Billing Address</h1>
                 <form className="flex flex-col py-4 gap-2">

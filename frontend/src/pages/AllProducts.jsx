@@ -142,7 +142,7 @@ export default function AllProducts() {
     return (
         <>
         <h1 className="text-center font-bold text-2xl pt-6 text-[#132A36]">BROWSE PRODUCTS</h1>
-        <div className="flex flex-col md:flex-row items-start gap-6">
+        <div className="flex flex-col bg-white md:flex-row items-start gap-6">
             {/* Desktop */}
                 {/* Filters */}
                 <aside className="hidden md:block md:w-72 shrink-0 px-4 py-6">

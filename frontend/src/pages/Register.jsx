@@ -44,7 +44,7 @@ export default function Register() {
 
     return (
         <>
-            <div className="flex flex-col px-10 py-10">
+            <div className="flex flex-col px-10 bg-white py-10">
                 <div className="text-[#132A36] flex flex-row gap-2">
                     <Link to='/' className="hover:text-[#132A36]/60">Home</Link> &gt; <p>Create Account</p>
                 </div>

@@ -44,7 +44,7 @@ export default function VerifyEmail() {
     if (!email) return null;
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-6">
+        <div className="flex flex-col bg-white items-center justify-center min-h-screen gap-6 px-6">
             <h1 className="text-3xl font-bold">
                 Verify Your Email
             </h1>

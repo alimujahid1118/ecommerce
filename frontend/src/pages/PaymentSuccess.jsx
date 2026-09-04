@@ -46,7 +46,7 @@ export default function PaymentSuccess() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl bg-white mx-auto px-4 py-8">
             {/* Success */}
             <div className="bg-green-50 border border-green-300 rounded-xl p-6 text-center">
                 <div className="text-6xl">✅</div>

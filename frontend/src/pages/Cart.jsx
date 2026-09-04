@@ -138,7 +138,7 @@ export default function Cart() {
 
     if (!isAuthenticated) {
         return (
-            <div className="flex flex-col md:flex-row w-full p-4 md:p-10 gap-6">
+            <div className="flex flex-col bg-white md:flex-row w-full p-4 md:p-10 gap-6">
 
                 {/* Left Section */}
                 <div className="w-full md:w-3/4">

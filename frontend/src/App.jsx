@@ -19,6 +19,7 @@ import { onMessage } from "firebase/messaging";
 import { messaging } from "./firebase/firebase";
 import { useAppContext } from "./context/AppContext";
 import ChatWidget from "./chat/ChatWidget";
+import Cursor from "./components/Cursor";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
 const AdminChat = lazy(() => import("./pages/AdminChat"))
 const Product = lazy(() => import("./pages/Product"))
@@ -54,6 +55,8 @@ function App() {
     }, [refreshNotifications])
 
     return (
+        <>
+        <Cursor />
         <div className="min-h-screen flex flex-col">
             <Header />
 
@@ -88,6 +91,7 @@ function App() {
 
             <ChatWidget />
         </div>
+        </>
     );
 }
 
