@@ -31,6 +31,8 @@ const Promotions = lazy(() => import("./pages/Promotions"))
 
 function App() {
     const [toasts, setToasts] = useState([]);
+    const [idleEnhancementsReady, setIdleEnhancementsReady] = useState(false);
+    const [desktopCursorReady, setDesktopCursorReady] = useState(false);
     const { refreshNotifications } = useAppContext();
     const location = useLocation();
 
@@ -65,6 +67,27 @@ function App() {
 
     const dismissToast = useCallback((id) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, []);
+
+    useEffect(() => {
+        let idleHandle;
+        let timeoutHandle;
+
+        const enableIdleEnhancements = () => {
+            setIdleEnhancementsReady(true);
+            setDesktopCursorReady(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+        };
+
+        if ("requestIdleCallback" in window) {
+            idleHandle = window.requestIdleCallback(enableIdleEnhancements, { timeout: 2000 });
+        } else {
+            timeoutHandle = window.setTimeout(enableIdleEnhancements, 1000);
+        }
+
+        return () => {
+            if (idleHandle) window.cancelIdleCallback(idleHandle);
+            if (timeoutHandle) window.clearTimeout(timeoutHandle);
+        };
     }, []);
 
     useEffect(() => {
@@ -109,14 +132,20 @@ function App() {
 
     return (
         <>
-        <Cursor />
+        {desktopCursorReady && (
+            <Suspense fallback={null}>
+                <Cursor />
+            </Suspense>
+        )}
         <SEO {...pageMeta} />
         <div className="min-h-screen flex flex-col">
             <Header />
 
-            <Suspense fallback={null}>
-                <NotificationPermissionPopup />
-            </Suspense>
+            {idleEnhancementsReady && (
+                <Suspense fallback={null}>
+                    <NotificationPermissionPopup />
+                </Suspense>
+            )}
             <NotificationToast toasts={toasts} onDismiss={dismissToast} />
 
             <main className="flex-1">
@@ -146,9 +175,11 @@ function App() {
 
             <Footer />
 
-            <Suspense fallback={null}>
-                <ChatWidget />
-            </Suspense>
+            {idleEnhancementsReady && (
+                <Suspense fallback={null}>
+                    <ChatWidget />
+                </Suspense>
+            )}
         </div>
         </>
     );

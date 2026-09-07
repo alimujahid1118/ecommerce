@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
+import { getCloudinaryImageUrl, getCloudinarySrcSet } from "../utils/cloudinary";
 
 const features = [
     {
@@ -152,7 +153,9 @@ export default function Homepage() {
                                 >
                                     <div className="overflow-hidden rounded-xl bg-slate-100">
                                         <img
-                                            src={eachCategory.imageUrl}
+                                            src={getCloudinaryImageUrl(eachCategory.imageUrl, 320)}
+                                            srcSet={getCloudinarySrcSet(eachCategory.imageUrl, [160, 320])}
+                                            sizes="160px"
                                             alt={eachCategory.name}
                                             loading="lazy"
                                             decoding="async"
@@ -223,7 +226,9 @@ export default function Homepage() {
                               >
                                   <div className="overflow-hidden bg-slate-100">
                                       <img
-                                          src={product.imageUrl}
+                                          src={getCloudinaryImageUrl(product.imageUrl, 640)}
+                                          srcSet={getCloudinarySrcSet(product.imageUrl, [320, 640])}
+                                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, calc(100vw - 2rem)"
                                           alt={product.name}
                                           loading="lazy"
                                           decoding="async"

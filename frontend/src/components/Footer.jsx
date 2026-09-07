@@ -2,7 +2,17 @@ export default function Footer () {
     return (
         <footer className="flex flex-col bg-[#104185] py-6 px-4 text-white">
             <div className="flex flex-col">
-                <img src="/web-logo2.webp" alt="E Shop website logo" width={800} height={200} className="w-64 h-auto"/>
+                <img
+                    src="/web-logo-footer-256.webp"
+                    srcSet="/web-logo-footer-256.webp 1x, /web-logo-footer-512.webp 2x"
+                    sizes="256px"
+                    alt="E Shop website logo"
+                    width={256}
+                    height={128}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-auto w-64"
+                />
                 <p className="px-5">Premium Tech Accessories, Delivered.</p>
             </div>
             <div className="flex flex-row gap-3 px-5 py-4">
