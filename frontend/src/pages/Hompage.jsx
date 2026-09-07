@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import discountBanner from "../assets/discount-banner.webp";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
@@ -101,10 +100,13 @@ export default function Homepage() {
                             <div className="absolute -right-6 bottom-6 h-24 w-24 rounded-full bg-[#dbeafe]/20 blur-2xl"></div>
                             <div className="relative overflow-hidden rounded-[1.6rem] border border-white/15 bg-white/10 p-3 backdrop-blur-sm">
                                 <img
-                                    src={discountBanner}
+                                    src="/assets/discount-banner-1200.webp"
+                                    srcSet="/assets/discount-banner-480.webp 480w, /assets/discount-banner-1200.webp 1200w"
+                                    sizes="(min-width: 1024px) 40vw, calc(100vw - 2rem)"
                                     alt="discount-banner"
                                     width="1200"
                                     height="800"
+                                    loading="eager"
                                     fetchPriority="high"
                                     decoding="async"
                                     className="aspect-[3/2] h-auto w-full rounded-[1.15rem] object-cover sm:aspect-auto sm:h-[420px]"
