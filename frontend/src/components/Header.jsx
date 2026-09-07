@@ -88,8 +88,10 @@ export default function Header() {
                             type="button"
                             aria-label="Open categories menu"
                             onClick={() => setMenuOpen(true)}
-                            className="fi fi-rr-menu-burger text-3xl text-[#104185] hover:cursor-pointer"
-                        ></button>
+                            className="text-3xl text-[#104185] hover:cursor-pointer"
+                        >
+                            <i className="fi fi-rr-menu-burger" aria-hidden="true"></i>
+                        </button>
                     </div>
 
                     <Link to="/">
@@ -160,8 +162,10 @@ export default function Header() {
                         type="button"
                         aria-label="Close categories menu"
                         onClick={() => setMenuOpen(false)}
-                        className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"
-                    ></button>
+                        className="text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"
+                    >
+                        <i className="fi fi-rr-cross-small" aria-hidden="true"></i>
+                    </button>
                     <div className="flex flex-col px-10 gap-4 text-lg font-semibold">
                         {
                             category?.map((eachCategory)=> (
