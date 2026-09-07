@@ -1,0 +1,8 @@
+# E Shop
+
+E Shop is an online storefront for tech accessories, home upgrades, and everyday essentials.
+
+## Important Pages
+
+- [Home](https://ecommerce-ten-zeta-91.vercel.app/)
+- [Products](https://ecommerce-ten-zeta-91.vercel.app/products)
