@@ -1,4 +1,3 @@
-import gsap from "gsap";
 import { useEffect, useRef } from "react";
 
 const hoverTargetSelector = "img, video, h1, h2, h3, h4, h5, h6, p, span, strong, em, li, a, button, i, label, svg, input, textarea, select";
@@ -9,11 +8,19 @@ export default function Cursor() {
     useEffect(() => {
         const cursor = cursorRef.current;
 
-        if (!cursor) {
+        if (!cursor || !window.matchMedia("(min-width: 768px)").matches) {
             return;
         }
 
+        let gsap;
+        let active = true;
+
+        import("gsap").then(({ default: loadedGsap }) => {
+            if (active) gsap = loadedGsap;
+        });
+
         const updateCursor = (event) => {
+            if (!gsap) return;
             const { clientX, clientY } = event;
             const rawTarget = event.target;
             const target = rawTarget instanceof Element ? rawTarget : rawTarget?.parentElement || null;
@@ -39,6 +46,7 @@ export default function Cursor() {
         };
 
         const handleMouseLeave = () => {
+            if (!gsap) return;
             gsap.to(cursor, {
                 opacity: 0,
                 duration: 0.15,
@@ -51,6 +59,7 @@ export default function Cursor() {
         window.addEventListener("mouseleave", handleMouseLeave);
 
         return () => {
+            active = false;
             window.removeEventListener("mousemove", updateCursor);
             window.removeEventListener("mouseleave", handleMouseLeave);
         };

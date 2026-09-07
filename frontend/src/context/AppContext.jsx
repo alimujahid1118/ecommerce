@@ -69,6 +69,8 @@ export function AppProvider({ children }) {
         }, [])
 
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         const getOrders = async() => {
             setOrdersLoading(true);
             try {
@@ -81,7 +83,7 @@ export function AppProvider({ children }) {
             }
         }
         getOrders()
-    }, [])
+    }, [isAuthenticated])
 
     const refreshNotifications = useCallback(async () => {
         try {

@@ -9,17 +9,15 @@ const Category = lazy(() => import("./pages/Category"))
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import Checkout from "./pages/Checkout";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import Orders from "./pages/Orders";
-import ManageUsers from "./pages/ManageUsers";
-import NotificationPermissionPopup from "./components/NotificationPermissionPopup";
+const Checkout = lazy(() => import("./pages/Checkout"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const Orders = lazy(() => import("./pages/Orders"));
+const ManageUsers = lazy(() => import("./pages/ManageUsers"));
+const NotificationPermissionPopup = lazy(() => import("./components/NotificationPermissionPopup"));
 import NotificationToast from "./components/NotificationToast";
-import { onMessage } from "firebase/messaging";
-import { messaging } from "./firebase/firebase";
 import { useAppContext } from "./context/AppContext";
-import ChatWidget from "./chat/ChatWidget";
-import Cursor from "./components/Cursor";
+const ChatWidget = lazy(() => import("./chat/ChatWidget"));
+const Cursor = lazy(() => import("./components/Cursor"));
 import SEO from "./components/SEO";
 import NotFound from "./pages/NotFound";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
@@ -70,20 +68,43 @@ function App() {
     }, []);
 
     useEffect(() => {
-        const unsubscribe = onMessage(messaging, (payload) => {
-            setToasts((prev) => [
-                ...prev,
-                {
-                    id: crypto.randomUUID(),
-                    title: payload.notification?.title,
-                    body: payload.notification?.body,
-                },
-            ]);
+        let unsubscribe;
+        let idleHandle;
+        let timeoutHandle;
 
-            refreshNotifications();
-        })
+        const startMessaging = () => import("firebase/messaging")
+            .then(async ({ onMessage }) => {
+                const { getMessagingInstance } = await import("./firebase/firebase");
+                const messaging = await getMessagingInstance();
 
-        return () => unsubscribe()
+                unsubscribe = onMessage(messaging, (payload) => {
+                    setToasts((prev) => [
+                        ...prev,
+                        {
+                            id: crypto.randomUUID(),
+                            title: payload.notification?.title,
+                            body: payload.notification?.body,
+                        },
+                    ]);
+
+                    refreshNotifications();
+                });
+            })
+            .catch(() => {
+                // Messaging is optional and should not delay the storefront.
+            });
+
+        if ("requestIdleCallback" in window) {
+            idleHandle = window.requestIdleCallback(startMessaging, { timeout: 3000 });
+        } else {
+            timeoutHandle = window.setTimeout(startMessaging, 2000);
+        }
+
+        return () => {
+            unsubscribe?.();
+            if (idleHandle) window.cancelIdleCallback(idleHandle);
+            if (timeoutHandle) window.clearTimeout(timeoutHandle);
+        };
     }, [refreshNotifications])
 
     return (
@@ -93,7 +114,9 @@ function App() {
         <div className="min-h-screen flex flex-col">
             <Header />
 
-            <NotificationPermissionPopup />
+            <Suspense fallback={null}>
+                <NotificationPermissionPopup />
+            </Suspense>
             <NotificationToast toasts={toasts} onDismiss={dismissToast} />
 
             <main className="flex-1">
@@ -123,7 +146,9 @@ function App() {
 
             <Footer />
 
-            <ChatWidget />
+            <Suspense fallback={null}>
+                <ChatWidget />
+            </Suspense>
         </div>
         </>
     );

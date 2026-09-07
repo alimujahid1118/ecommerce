@@ -103,7 +103,11 @@ export default function Homepage() {
                                 <img
                                     src={discountBanner}
                                     alt="discount-banner"
-                                    className="h-[360px] w-full rounded-[1.15rem] object-cover sm:h-[420px]"
+                                    width="1200"
+                                    height="800"
+                                    fetchPriority="high"
+                                    decoding="async"
+                                    className="aspect-[3/2] h-auto w-full rounded-[1.15rem] object-cover sm:aspect-auto sm:h-[420px]"
                                 />
                             </div>
                         </div>
@@ -147,7 +151,11 @@ export default function Homepage() {
                                         <img
                                             src={eachCategory.imageUrl}
                                             alt={eachCategory.name}
-                                            className="h-24 w-full object-cover transition duration-200 group-hover:scale-105 sm:h-28"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="160"
+                                            height="112"
+                                            className="aspect-[10/7] h-auto w-full object-cover transition duration-200 group-hover:scale-105 sm:h-28"
                                         />
                                     </div>
                                     <p className="text-sm font-semibold text-[#132A36]">{eachCategory.name}</p>
@@ -214,7 +222,11 @@ export default function Homepage() {
                                       <img
                                           src={product.imageUrl}
                                           alt={product.name}
-                                          className="h-52 w-full object-cover transition duration-200 group-hover:scale-[1.03]"
+                                          loading="lazy"
+                                          decoding="async"
+                                          width="520"
+                                          height="208"
+                                          className="aspect-[5/2] h-auto w-full object-cover transition duration-200 group-hover:scale-[1.03]"
                                       />
                                   </div>
 
