@@ -16,8 +16,8 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification?.title || "New notification"
     const notificationOptions = {
         body: payload.notification?.body || "You have a new message",
-        icon: "/web-logo.png",
-        badge: "/web-logo.png"
+        icon: "/web-logo.webp",
+        badge: "/web-logo.webp"
     }
 
     self.registration.showNotification(

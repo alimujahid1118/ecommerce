@@ -94,7 +94,7 @@ export default function Header() {
 
                     <Link to="/">
                         <img
-                            src="/web-logo.png"
+                            src="/web-logo.webp"
                             alt="E-Store website logo"
                             className="w-36 h-24"
                         />
