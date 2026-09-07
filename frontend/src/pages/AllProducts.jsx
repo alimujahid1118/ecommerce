@@ -255,7 +255,7 @@ export default function AllProducts() {
                 </aside>
 
             {/* Mobile */}
-            <button onClick={() => setMenuOpen(true)} className="flex w-full justify-end pr-8 pt-4 gap-2 md:hidden">
+            <button type="button" aria-label="Open product filters" onClick={() => setMenuOpen(true)} className="flex w-full justify-end pr-8 pt-4 gap-2 md:hidden">
                 <p className="text-[#132A36] font-semibold text-lg">Filters</p>
                 <i className="fi fi-rr-filter mt-[3px] text-[#104185]"></i>
             </button>
@@ -265,7 +265,12 @@ export default function AllProducts() {
                 menuOpen && (
                     <div className="fixed top-0 z-50 w-full h-full bg-white">
                         <div>
-                            <i onClick={() => setMenuOpen(false)} className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"></i>
+                            <button
+                                type="button"
+                                aria-label="Close product filters"
+                                onClick={() => setMenuOpen(false)}
+                                className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"
+                            ></button>
                         </div>
                         <div className="flex flex-col gap-12 py-24 px-4">
                             <div className="flex flex-col gap-4">

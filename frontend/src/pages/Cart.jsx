@@ -187,7 +187,7 @@ export default function Cart() {
 
                                             <td>
                                                 <div className="flex items-center gap-2">
-                                                    <button onClick={() => handleDecrease(item)} className="text-3xl">
+                                                    <button type="button" aria-label={`Decrease quantity of ${item.name}`} onClick={() => handleDecrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-minus-small"></i>
                                                     </button>
 
@@ -195,7 +195,7 @@ export default function Cart() {
                                                         {item.quantity}
                                                     </span>
 
-                                                    <button onClick={() => handleIncrease(item)} className="text-3xl">
+                                                    <button type="button" aria-label={`Increase quantity of ${item.name}`} onClick={() => handleIncrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-plus-small"></i>
                                                     </button>
                                                 </div>
@@ -257,7 +257,7 @@ export default function Cart() {
                                             </p>
 
                                             <div className="flex items-center gap-3 mt-3">
-                                                <button onClick={() => handleDecrease(item)} className="text-3xl">
+                                                <button type="button" aria-label={`Decrease quantity of ${item.name}`} onClick={() => handleDecrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-minus-small"></i>
                                                 </button>
 
@@ -265,7 +265,7 @@ export default function Cart() {
                                                     {item.quantity}
                                                 </span>
 
-                                                <button onClick={() => handleIncrease(item)} className="text-3xl">
+                                                <button type="button" aria-label={`Increase quantity of ${item.name}`} onClick={() => handleIncrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-plus-small"></i>
                                                 </button>
                                             </div>
@@ -379,7 +379,7 @@ export default function Cart() {
 
                                             <td>
                                                 <div className="flex items-center gap-2">
-                                                    <button onClick={() => handleDecrease(item)} className="text-3xl">
+                                                    <button type="button" aria-label={`Decrease quantity of ${item.product.name}`} onClick={() => handleDecrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-minus-small"></i>
                                                     </button>
 
@@ -387,7 +387,7 @@ export default function Cart() {
                                                         {item.quantity}
                                                     </span>
 
-                                                    <button onClick={() => handleIncrease(item)} className="text-3xl">
+                                                    <button type="button" aria-label={`Increase quantity of ${item.product.name}`} onClick={() => handleIncrease(item)} className="text-3xl">
                                                         <i className="fi fi-rr-plus-small"></i>
                                                     </button>
                                                 </div>
@@ -451,7 +451,7 @@ export default function Cart() {
                                             </p>
 
                                             <div className="flex items-center gap-3 mt-3">
-                                                <button onClick={() => handleDecrease(item)} className="text-3xl">
+                                                <button type="button" aria-label={`Decrease quantity of ${item.product.name}`} onClick={() => handleDecrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-minus-small"></i>
                                                 </button>
 
@@ -459,7 +459,7 @@ export default function Cart() {
                                                     {item.quantity}
                                                 </span>
 
-                                                <button onClick={() => handleIncrease(item)} className="text-3xl">
+                                                <button type="button" aria-label={`Increase quantity of ${item.product.name}`} onClick={() => handleIncrease(item)} className="text-3xl">
                                                     <i className="fi fi-rr-plus-small"></i>
                                                 </button>
                                             </div>

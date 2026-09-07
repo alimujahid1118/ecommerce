@@ -84,10 +84,12 @@ export default function Header() {
                 {/* Top Row */}
                 <div className="flex items-center justify-between px-6">
                     <div>
-                        <i
+                        <button
+                            type="button"
+                            aria-label="Open categories menu"
                             onClick={() => setMenuOpen(true)}
                             className="fi fi-rr-menu-burger text-3xl text-[#104185] hover:cursor-pointer"
-                        ></i>
+                        ></button>
                     </div>
 
                     <Link to="/">
@@ -112,7 +114,7 @@ export default function Header() {
                                 }
                             }}
                         />
-                        <button onClick={handleSearch} className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
+                        <button type="button" aria-label="Search products" onClick={handleSearch} className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
                             <i className="fi fi-rr-search"></i>
                         </button>
                     </div>
@@ -120,7 +122,7 @@ export default function Header() {
                     <div className="flex gap-3 items-center relative">
                         {isAuthenticated && <NotificationMenu />}
                         <ProfileMenu />
-                        <Link to="/cart">
+                        <Link to="/cart" aria-label="View shopping cart">
                             <i className="fi fi-rr-shopping-cart text-2xl text-[#104185] hover:cursor-pointer"></i>
                         </Link>
                     </div>
@@ -141,7 +143,7 @@ export default function Header() {
                             placeholder="Search for products..."
                             className="flex-1 border border-[#90acd3] py-2 px-3 rounded-l-md"
                         />
-                        <button onClick={handleSearch} className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
+                        <button type="button" aria-label="Search products" onClick={handleSearch} className="bg-[#104185] border border-[#104185] px-4 text-white rounded-r-md">
                             <i className="fi fi-rr-search"></i>
                         </button>
                     </div>
@@ -154,7 +156,12 @@ export default function Header() {
                     <div className="p-10 font-bold text-xl flex flex-row justify-between text-[#132A36]">
                         <p>All Categories</p>
                     </div>
-                    <i onClick={() => setMenuOpen(false)} className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"></i>
+                    <button
+                        type="button"
+                        aria-label="Close categories menu"
+                        onClick={() => setMenuOpen(false)}
+                        className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"
+                    ></button>
                     <div className="flex flex-col px-10 gap-4 text-lg font-semibold">
                         {
                             category?.map((eachCategory)=> (

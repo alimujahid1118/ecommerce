@@ -64,7 +64,7 @@ export default function DashboardAside() {
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="flex flex-row gap-2 px-2 py-2 mb-2 mx-2 justify-center bg-[#132A36] text-white font-semibold rounded-md">
                 <i className="fi fi-rr-power mt-[3px]"></i>
-                <button onClick={handleLogout}> LOG OUT</button>
+                <button type="button" aria-label="Log out" onClick={handleLogout}> LOG OUT</button>
             </div>
         </aside>
     )
