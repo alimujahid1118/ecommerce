@@ -708,6 +708,7 @@ export async function getProducts(req, res) {
     const { category, sort, search } = req.query;
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
+    const homepageRequest = req.query.homepage === "true";
 
     try {
         const filter = {};
@@ -744,14 +745,19 @@ export async function getProducts(req, res) {
             query = query.sort({ price: -1 });
         }
 
-        const totalProducts = await productModel.countDocuments(filter);
-        const totalPages = Math.ceil(totalProducts / limit);
-
-        const products = await query.lean()
+        const productsQuery = query
+            .select(homepageRequest ? "name slug imageUrl price stock" : undefined)
             .skip(skip)
-            .limit(limit)
-            .populate("author", "firstName lastName")
-            .populate("category", "name slug");
+            .limit(limit);
+
+        if (!homepageRequest) {
+            productsQuery.populate("author", "firstName lastName");
+            productsQuery.populate("category", "name slug");
+        }
+
+        const products = await productsQuery.lean();
+        const totalProducts = homepageRequest ? products.length : await productModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalProducts / limit);
 
         return res.status(200).json({
             success: true,

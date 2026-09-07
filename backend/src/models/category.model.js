@@ -21,6 +21,8 @@ const categorySchema = new mongoose.Schema({
     }
 }, { timestamps: true })
 
+categorySchema.index({ slug: 1 });
+
 const categoryModel = mongoose.model('categories', categorySchema);
 
 export default categoryModel;

@@ -42,6 +42,7 @@ export default function Homepage() {
                 const response = await api.get("/auth/get-products", {
                     params: {
                         limit: 4,
+                        homepage: true,
                     },
                 });
 

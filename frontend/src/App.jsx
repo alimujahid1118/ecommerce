@@ -1,7 +1,7 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import Homepage from "./pages/Hompage";
 
-const Homepage = lazy(() => import("./pages/Hompage")) 
 const Register = lazy(() => import("./pages/Register"))
 const Dashboard = lazy(() => import("./pages/Dashboard")) 
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail")) 
