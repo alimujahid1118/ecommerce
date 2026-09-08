@@ -3,13 +3,16 @@ import { Navigate } from "react-router-dom";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 import api from "../api/axios";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function ManageUsers() {
 
-    const { isAuthenticated, isAuthLoading, setIsAuthenticated } = useAppContext();
+    const { isAuthenticated, isAuthLoading, setIsAuthenticated, showToast } = useAppContext();
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deleteId, setDeleteId] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         const getUsers = async () => {
@@ -26,13 +29,14 @@ export default function ManageUsers() {
         getUsers();
     }, []);
 
-    const handleDelete = async (userId) => {
+    const handleDelete = async () => {
+        setDeleting(true);
         try {
-            await api.delete(`/auth/delete-user/${userId}`);
-            setUsers(users.filter((user) => user._id !== userId));
-        } catch (error) {
-            console.log(error);
-        }
+            await api.delete(`/auth/delete-user/${deleteId}`);
+            setUsers((prev) => prev.filter((user) => user._id !== deleteId));
+            showToast("User deleted successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to delete user.", "error"); }
+        finally { setDeleting(false); setDeleteId(null); }
     };
 
     if (isAuthLoading) {
@@ -115,7 +119,7 @@ export default function ManageUsers() {
                                 </div>
                                 <div className="pt-2">
                                     <button
-                                        onClick={() => handleDelete(user._id)}
+                                        onClick={() => setDeleteId(user._id)}
                                         className="bg-[#132A36] text-white px-4 py-2 rounded-lg"
                                     >
                                         Delete
@@ -187,7 +191,7 @@ export default function ManageUsers() {
                                           </td>
                                           <td className="text-center">
                                             <button
-                                                onClick={() => handleDelete(user._id)}
+                                                onClick={() => setDeleteId(user._id)}
                                                 className="bg-[#132A36] text-sm text-white px-2 py-1 rounded-lg"
                                             >
                                                 Delete
@@ -199,6 +203,7 @@ export default function ManageUsers() {
                     </table>
                 </div>
             </main>
+            <ConfirmationModal open={Boolean(deleteId)} title="Confirm deletion" message="Are you sure you want to delete this user? This action cannot be undone." confirmLabel="Delete" loading={deleting} onCancel={() => setDeleteId(null)} onConfirm={handleDelete} />
         </div>
     );
 }

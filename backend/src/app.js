@@ -27,4 +27,21 @@ app.use(('/api'), tokenRouter)
 app.use(('/api'), notificationRouter)
 app.use(('/api'), chatRouter)
 
+app.use((error, _req, res, next) => {
+    if (!error) return next();
+    if (error.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ message: "Each image must be 10 MB or smaller." });
+    }
+    if (error.code === "LIMIT_FILE_COUNT") {
+        return res.status(400).json({ message: "You can upload up to 10 images." });
+    }
+    if (error.message === "Only image files are allowed.") {
+        return res.status(400).json({ message: error.message });
+    }
+    if (error.message === "Please upload a CSV file.") {
+        return res.status(400).json({ message: error.message });
+    }
+    return next(error);
+});
+
 export default app;

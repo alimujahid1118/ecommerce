@@ -6,9 +6,11 @@ import api from "../api/axios";
 
 export default function UpdateCategory() {
 
-    const { isAuthLoading, isAuthenticated, setIsAuthenticated, setCategory } = useAppContext();
+    const { isAuthLoading, isAuthenticated, setIsAuthenticated, setCategory, showToast } = useAppContext();
     const [ categoryBySlug, setCategoryBySlug ] = useState(null)
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [imageInputKey, setImageInputKey] = useState(0);
     const [ updateCategoryBySlug, setUpdateCategoryBySlug ] = useState({
         'name' : categoryBySlug?.name,
         'imageUrl' : null
@@ -22,6 +24,7 @@ export default function UpdateCategory() {
                 const response = await api.get(`/auth/get-category/${slug}`)
                 const updatedCategory = response.data;
                 setCategoryBySlug(updatedCategory)
+                setUpdateCategoryBySlug({ name: updatedCategory.name || "", imageUrl: null });
             } catch (error) {
                 console.log(error)
             } finally {
@@ -34,13 +37,15 @@ export default function UpdateCategory() {
 
     const handleSubmit = async(e) => {
         e.preventDefault();
+        if (!updateCategoryBySlug.name.trim()) return showToast("Category name is required.", "error");
 
+        setSubmitting(true);
         try {
 
             const data = new FormData();
 
             data.append("name", updateCategoryBySlug.name);
-            data.append("image", updateCategoryBySlug.imageUrl);
+            if (updateCategoryBySlug.imageUrl) data.append("image", updateCategoryBySlug.imageUrl);
 
             const response = await api.put(`/auth/update-category/${slug}`, data)
             const updatedCategory = response.data;
@@ -52,11 +57,12 @@ export default function UpdateCategory() {
             setCategoryBySlug(updatedCategory)
             setUpdateCategoryBySlug({
                 'name' : '',
-                'image' : null
+                'imageUrl' : null
             })
-        } catch (error) {
-            console.log(error)
-        }
+            setImageInputKey((key) => key + 1);
+            showToast("Category updated successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to update category.", "error"); }
+        finally { setSubmitting(false); }
     };
 
     if (isAuthLoading) {
@@ -163,9 +169,9 @@ export default function UpdateCategory() {
                         </div>
                         <div className="flex flex-col gap-2">
                             <p className="text-md font-semibold text-[#104185]">Image</p>
-                            <input name="imageUrl" onChange={(e) => setUpdateCategoryBySlug({...updateCategoryBySlug, imageUrl: e.target.files[0]})} type="file" accept="image/*" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
+                            <input key={imageInputKey} name="imageUrl" onChange={(e) => setUpdateCategoryBySlug({...updateCategoryBySlug, imageUrl: e.target.files[0]})} type="file" accept="image/*" className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
                         </div>
-                        <button type="submit" className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2">SEND</button>
+                        <button type="submit" disabled={submitting} className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2 disabled:opacity-60">{submitting ? "Updating..." : "Update Category"}</button>
                     </form>
                 </div>
             </main>

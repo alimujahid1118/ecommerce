@@ -3,16 +3,19 @@ import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 import { useEffect, useState } from "react";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 export default function Category () {
 
-    const { isAuthenticated, setIsAuthenticated, categoryData, setCategoryData, category, setCategory, isAuthLoading } = useAppContext();
-    const [loading, setLoading] = useState(true);
+    const { isAuthenticated, setIsAuthenticated, categoryData, setCategoryData, category, setCategory, isAuthLoading, showToast } = useAppContext();
+    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [deleteSlug, setDeleteSlug] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [imageInputKey, setImageInputKey] = useState(0);
 
     useEffect(() => {
-        if (category.length > 0) {
-            setLoading(false);
-        }
+        setLoading(false);
     }, [category]);
 
     if (isAuthLoading) {
@@ -22,32 +25,37 @@ export default function Category () {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!categoryData.name.trim()) return showToast("Category name is required.", "error");
+        if (!categoryData.image) return showToast("Category image is required.", "error");
         const data = new FormData();
 
         data.append("name", categoryData.name);
         data.append("image", categoryData.image);
 
+        setSubmitting(true);
         try {
             const response = await api.post("/auth/create-category", data);
             setCategoryData({
                 name: '',
                 image: null
             })
+            setImageInputKey((key) => key + 1);
             setCategory((prev) => [...prev, response.data])
-        } catch (error) {
-            console.log(error)
-        }
+            showToast("Category added successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to add category.", "error"); }
+        finally { setSubmitting(false); }
     };
 
-    const handleDelete = async (slug) => {
+    const handleDelete = async () => {
+        setDeleting(true);
         try {
-            await api.delete(`/auth/delete-category/${slug}`)
+            await api.delete(`/auth/delete-category/${deleteSlug}`)
             setCategory((prev) =>
-                prev.filter((eachCategory) => eachCategory.slug !== slug)
+                prev.filter((eachCategory) => eachCategory.slug !== deleteSlug)
             );
-        } catch (error) {
-            console.log(error)
-        }
+            showToast("Category deleted successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to delete category.", "error"); }
+        finally { setDeleting(false); setDeleteSlug(null); }
     }
 
     if (!isAuthenticated) {
@@ -110,7 +118,7 @@ export default function Category () {
                                         Update
                                     </Link>
 
-                                    <button onClick={() => handleDelete(eachCategory.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                    <button onClick={() => setDeleteSlug(eachCategory.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                         Delete
                                     </button>
                                 </div>
@@ -172,7 +180,7 @@ export default function Category () {
                                         </td>
 
                                         <td className="text-center">
-                                            <button onClick={() => handleDelete(eachCategory.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                            <button onClick={() => setDeleteSlug(eachCategory.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                                 Delete
                                             </button>
                                         </td>
@@ -199,7 +207,7 @@ export default function Category () {
                         </div>
                         <div className="flex flex-col gap-2">
                             <p className="text-md font-semibold text-[#104185]">Image</p>
-                            <input type="file" accept="image/*"
+                            <input key={imageInputKey} type="file" accept="image/*"
                             onChange={(e) =>
                                 setCategoryData({
                                     ...categoryData,
@@ -207,9 +215,10 @@ export default function Category () {
                                 })
                             } placeholder="Category name.." className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
                         </div>
-                        <button type="submit" className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2">SEND</button>
+                        <button type="submit" disabled={submitting} className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2 disabled:opacity-60">{submitting ? "Adding..." : "Add Category"}</button>
                     </form>
                 </div>
+                <ConfirmationModal open={Boolean(deleteSlug)} title="Confirm deletion" message="Are you sure you want to delete this category? This action cannot be undone." confirmLabel="Delete" loading={deleting} onCancel={() => setDeleteSlug(null)} onConfirm={handleDelete} />
             </main>
         </div>
     )

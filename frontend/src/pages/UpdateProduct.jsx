@@ -5,14 +5,22 @@ import { useEffect } from "react";
 import api from "../api/axios";
 import { useState } from "react";
 
+const MAX_PRODUCT_IMAGES = 10;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const productImageList = (product) => product?.imageUrls?.length ? product.imageUrls : (product?.imageUrl ? [product.imageUrl] : []);
+
 export default function UpdateProduct() {
 
-    const { isAuthLoading, isAuthenticated, setIsAuthenticated, category } = useAppContext();
+    const { isAuthLoading, isAuthenticated, setIsAuthenticated, category, showToast } = useAppContext();
     const [ getProductBySlug, setGetProductBySlug] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [existingImages, setExistingImages] = useState([]);
+    const [newImages, setNewImages] = useState([]);
+    const [newImagePreviews, setNewImagePreviews] = useState([]);
+    const [imageInputKey, setImageInputKey] = useState(0);
     const [updateProduct, setUpdateProduct] = useState({
         name: "",
-        image: null,
         price: "",
         stock: "",
         category: "",
@@ -25,6 +33,11 @@ export default function UpdateProduct() {
             try {
                 const response = await api.get(`/auth/get-product/${slug}`)
                 setGetProductBySlug(response.data)
+                const urls = productImageList(response.data);
+                const publicIds = response.data.imagePublicIds?.length ? response.data.imagePublicIds : (response.data.imagePublicId ? [response.data.imagePublicId] : []);
+                setExistingImages(urls.map((url, index) => ({ url, publicId: publicIds[index] || "" })));
+                setNewImages([]);
+                setUpdateProduct({ name: response.data.name || "", price: response.data.price ?? "", stock: response.data.stock ?? "", category: response.data.category?.slug || "" });
             } catch (error) {
                 console.log(error)
             } finally {
@@ -35,40 +48,68 @@ export default function UpdateProduct() {
         getProduct();
     }, [slug])
 
+    useEffect(() => {
+        const previews = newImages.map((file) => URL.createObjectURL(file));
+        setNewImagePreviews(previews);
+        return () => previews.forEach((preview) => URL.revokeObjectURL(preview));
+    }, [newImages]);
+
     const handleChange = (e) => {
         const {name, value, files, type} = e.target;
-        setUpdateProduct((prev) => ({
-            ...prev,
-            [name] : type === "file" ? files[0] : value
-        }))
+        if (type === "file") {
+            const validFiles = Array.from(files || []).filter((file) => {
+                if (!file.type.startsWith("image/")) {
+                    showToast(`${file.name} is not a supported image file.`, "error");
+                    return false;
+                }
+                if (file.size > MAX_IMAGE_SIZE) {
+                    showToast(`${file.name} is larger than 10 MB.`, "error");
+                    return false;
+                }
+                return true;
+            });
+            setNewImages((previous) => {
+                const existing = new Set(previous.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+                const additions = validFiles.filter((file) => !existing.has(`${file.name}-${file.size}-${file.lastModified}`));
+                const available = MAX_PRODUCT_IMAGES - existingImages.length - previous.length;
+                if (additions.length > available) showToast(`You can select up to ${MAX_PRODUCT_IMAGES} total images.`, "error");
+                return [...previous, ...additions].slice(0, Math.max(0, available));
+            });
+            e.target.value = "";
+            return;
+        }
+        setUpdateProduct((prev) => ({ ...prev, [name]: value }))
     }
+
+    const removeExistingImage = (url) => setExistingImages((previous) => previous.filter((image) => image.url !== url));
+    const removeNewImage = (index) => setNewImages((previous) => previous.filter((_, imageIndex) => imageIndex !== index));
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!updateProduct.name.trim() || updateProduct.price === "" || updateProduct.stock === "" || !updateProduct.category) {
+            return showToast("Name, price, stock and category are required.", "error");
+        }
 
+        setSubmitting(true);
         try {
             const data = new FormData();
             data.append("name", updateProduct.name);
             data.append("price", updateProduct.price);
             data.append("stock", updateProduct.stock);
             data.append("category", updateProduct.category);
-
-            if (updateProduct.image) {
-                data.append("image", updateProduct.image);
-            }
+            data.append("keepImageUrls", JSON.stringify(existingImages.map((image) => image.url)));
+            newImages.forEach((image) => data.append("image", image));
 
             const response = await api.put(`/auth/update-product/${slug}`, data)
             setGetProductBySlug(response.data)
-            setUpdateProduct({
-                name: "",
-                image: null,
-                price: "",
-                stock: "",
-                category: "",
-            })
-        } catch (error) {
-            console.log(error)
-        }
+            const urls = productImageList(response.data);
+            const publicIds = response.data.imagePublicIds?.length ? response.data.imagePublicIds : (response.data.imagePublicId ? [response.data.imagePublicId] : []);
+            setExistingImages(urls.map((url, index) => ({ url, publicId: publicIds[index] || "" })));
+            setNewImages([]);
+            setImageInputKey((key) => key + 1);
+            showToast("Product updated successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to update product.", "error"); }
+        finally { setSubmitting(false); }
     }
 
     if (isAuthLoading) {
@@ -124,10 +165,7 @@ export default function UpdateProduct() {
 
                                     <div className="flex flex-col gap-2">
                                         <p className="text-xs text-slate-500">Image</p>
-                                        <img
-                                            src={getProductBySlug?.imageUrl}
-                                            className="w-20 h-20 object-cover rounded"
-                                        />
+                                        <div className="flex flex-wrap gap-2">{productImageList(getProductBySlug).map((image) => <img key={image} src={image} className="w-20 h-20 object-cover rounded" />)}</div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 pb-2">
                                         <div>
@@ -196,10 +234,7 @@ export default function UpdateProduct() {
                                             <td className="py-4 pl-4 whitespace-normal break-words">{getProductBySlug?.name?.length > 25 ? `${getProductBySlug?.name?.slice(0, 25)}...` : getProductBySlug?.name}</td>
 
                                             <td className="p-4">
-                                                <img
-                                                    src={getProductBySlug?.imageUrl}
-                                                    className="w-16 h-16 rounded object-cover"
-                                                />
+                                                <div className="flex flex-wrap gap-2">{productImageList(getProductBySlug).map((image) => <img key={image} src={image} className="w-16 h-16 rounded object-cover" />)}</div>
                                             </td>
 
                                             <td className="p-4">${getProductBySlug?.price}</td>
@@ -221,8 +256,11 @@ export default function UpdateProduct() {
                                 <input name="name" type="text" value={updateProduct.name} onChange={handleChange} placeholder="Product name.." className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <p className="text-md font-semibold text-[#104185]">Image</p>
-                                <input name="image" type="file" accept="image/*" onChange={handleChange} className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
+                                <p className="text-md font-semibold text-[#104185]">Existing Photos ({existingImages.length})</p>
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{existingImages.map((image) => <div key={image.url} className="relative"><div className="aspect-square overflow-hidden rounded-lg bg-slate-100"><img src={image.url} alt="Existing product" className="h-full w-full object-contain" /></div><button type="button" onClick={() => removeExistingImage(image.url)} aria-label="Remove existing image" className="absolute right-1 top-1 rounded-full bg-[#132A36] px-2 py-1 text-xs text-white">×</button></div>)}</div>
+                                <p className="text-md font-semibold text-[#104185]">Add New Photos ({existingImages.length + newImages.length}/{MAX_PRODUCT_IMAGES})</p>
+                                <input key={imageInputKey} name="images" type="file" accept="image/*" multiple onChange={handleChange} className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
+                                {newImages.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{newImages.map((image, index) => <div key={`${image.name}-${image.lastModified}`} className="relative"><div className="aspect-square overflow-hidden rounded-lg bg-slate-100"><img src={newImagePreviews[index]} alt={image.name} className="h-full w-full object-contain" /></div><button type="button" onClick={() => removeNewImage(index)} aria-label={`Remove ${image.name}`} className="absolute right-1 top-1 rounded-full bg-[#132A36] px-2 py-1 text-xs text-white">×</button><p className="truncate text-xs text-slate-500">{image.name}</p></div>)}</div>}
                             </div>
                             <div>
                                 <p className="text-md font-semibold text-[#104185]">Price</p>
@@ -243,7 +281,7 @@ export default function UpdateProduct() {
                                     }
                                 </select>
                             </div>
-                            <button type="submit" className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2">SEND</button>
+                            <button type="submit" disabled={submitting} className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2 disabled:opacity-60">{submitting ? "Updating..." : "Update Product"}</button>
                         </form>
                     </div>
                 </main>

@@ -13,6 +13,32 @@ import cartModel from "../models/cart.model.js";
 import Stripe from "stripe";
 import orderModel from "../models/order.model.js";
 import { sendToTopic, sendToUser } from "../services/notification.service.js";
+import commentModel from "../models/comment.model.js";
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?])\S{8,}$/;
+
+function productImages(product) {
+    return product?.imageUrls?.length ? product.imageUrls : (product?.imageUrl ? [product.imageUrl] : []);
+}
+
+function productImagePublicIds(product) {
+    return product?.imagePublicIds?.length ? product.imagePublicIds : (product?.imagePublicId ? [product.imagePublicId] : []);
+}
+
+async function uploadProductImages(files) {
+    const uploaded = [];
+    try {
+        for (const file of files) {
+            const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+            const result = await cloudinary.uploader.upload(base64, { folder: "products" });
+            uploaded.push({ url: result.secure_url, publicId: result.public_id });
+        }
+        return uploaded;
+    } catch (error) {
+        await Promise.all(uploaded.map(({ publicId }) => cloudinary.uploader.destroy(publicId).catch(() => null)));
+        throw error;
+    }
+}
 
 export async function register(req, res) {
 
@@ -440,9 +466,9 @@ export async function createCategory(req, res) {
             })
             const file = req.file;
 
-            if (!name) {
+            if (!name || !file) {
                 return res.status(400).json({
-                    message: "Category name cannot be empty."
+                    message: !name ? "Category name cannot be empty." : "Category image is required."
                 })
             }
 
@@ -645,18 +671,22 @@ export async function createProduct(req, res) {
     if (accessToken) {
         try {
             const { name, price, stock, category } = req.body;
-            const file = req.file;
+            const files = req.files || [];
             const user = jwt.verify(accessToken, envConfig.JWT_SECRET)
 
-            if (!name || !price || !stock || !category || !file) {
+            if (!name || price === undefined || price === "" || stock === undefined || stock === "" || !category || files.length === 0) {
                 return res.status(400).json({
                     message: 'Please enter all fields.'
                 })
             }
+            if (Number(price) < 0 || Number(stock) < 0 || Number.isNaN(Number(price)) || Number.isNaN(Number(stock))) {
+                return res.status(400).json({ message: "Price and stock must be valid non-negative numbers." });
+            }
+            const categoryExists = await categoryModel.exists({ _id: category });
+            if (!categoryExists) return res.status(400).json({ message: "Selected category was not found." });
 
             try {
-                const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
-                const result = await cloudinary.uploader.upload(base64, { folder: "products" })
+                const uploadedImages = await uploadProductImages(files);
                 const slug = slugify(name, {
                     lower: true,
                     strict: true,
@@ -666,8 +696,10 @@ export async function createProduct(req, res) {
                 const product = await productModel.create({
                     name: name,
                     slug: slug,
-                    imageUrl: result.secure_url,
-                    imagePublicId: result.public_id,
+                    imageUrl: uploadedImages[0].url,
+                    imagePublicId: uploadedImages[0].publicId,
+                    imageUrls: uploadedImages.map((image) => image.url),
+                    imagePublicIds: uploadedImages.map((image) => image.publicId),
                     price: price,
                     author: user.id,
                     stock: stock,
@@ -756,6 +788,7 @@ export async function getProducts(req, res) {
         }
 
         const products = await productsQuery.lean();
+        products.forEach((product) => { product.imageUrls = productImages(product); });
         const totalProducts = homepageRequest ? products.length : await productModel.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
 
@@ -781,6 +814,8 @@ export async function getProductBySlug(req, res) {
 
     try {
         const product = await productModel.findOne({ slug: slug }).populate("author", "firstName lastName").populate("category", "name slug").lean()
+        if (!product) return res.status(404).json({ message: "Product not found." });
+        product.imageUrls = productImages(product);
         return res.status(200).json(product)
     } catch (error) {
         console.log(error)
@@ -801,7 +836,8 @@ export async function deleteProduct(req, res) {
 
         const { slug } = req.params
 
-        await productModel.findOneAndDelete({ slug: slug })
+        const deletedProduct = await productModel.findOneAndDelete({ slug: slug })
+        if (!deletedProduct) return res.status(404).json({ message: "Product not found." });
         return res.status(200).json({
             message: "Product deleted successfully."
         })
@@ -821,45 +857,65 @@ export async function deleteProduct(req, res) {
 export async function updateProductBySlug(req, res) {
 
     const { name, price, stock, category } = req.body;
-    const file = req.file;
+    const files = req.files || [];
 
-    const newSlug = slugify(name, {
-        lower: true,
-        strict: true,
-        trim: true
-    })
     const { slug } = req.params;
 
     const product = await productModel.findOne({ slug: slug })
+    if (!product) return res.status(404).json({ message: "Product not found." });
+
+    let keepImageUrls;
+    try {
+        keepImageUrls = req.body.keepImageUrls === undefined
+            ? productImages(product)
+            : JSON.parse(req.body.keepImageUrls || "[]");
+    } catch {
+        return res.status(400).json({ message: "Invalid retained image data." });
+    }
+    if (!Array.isArray(keepImageUrls)) return res.status(400).json({ message: "Invalid retained image data." });
 
     if (name) {
         product.name = name;
-        product.slug = newSlug;
+        product.slug = slugify(name, { lower: true, strict: true, trim: true });
     }
-    if (price) {
-        product.price = price;
+    if (price !== undefined && price !== "") {
+        if (Number(price) < 0 || Number.isNaN(Number(price))) return res.status(400).json({ message: "Price must be a valid non-negative number." });
+        product.price = Number(price);
     }
-    if (stock) {
-        product.stock = stock;
+    if (stock !== undefined && stock !== "") {
+        if (Number(stock) < 0 || Number.isNaN(Number(stock))) return res.status(400).json({ message: "Stock must be a valid non-negative number." });
+        product.stock = Number(stock);
     }
 
     if (category) {
-        const existingCategory = await categoryModel.findOne({
-            slug: category,
-        });
+        const existingCategory = await categoryModel.findOne({ slug: category }) ||
+            (/^[a-f\d]{24}$/i.test(category) ? await categoryModel.findById(category) : null);
+        if (!existingCategory) return res.status(400).json({ message: "Selected category was not found." });
 
         product.category = existingCategory._id;
     }
 
-    if (file) {
-        const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`
-        await cloudinary.uploader.destroy(product.imagePublicId)
+    const currentUrls = productImages(product);
+    const currentPublicIds = productImagePublicIds(product);
+    const retainedSet = new Set(keepImageUrls);
+    const retainedUrls = currentUrls.filter((url) => retainedSet.has(url));
+    const retainedPublicIds = currentPublicIds.filter((_id, index) => retainedSet.has(currentUrls[index]));
+    const removedPublicIds = currentPublicIds.filter((_id, index) => !retainedSet.has(currentUrls[index]));
 
-        const result = await cloudinary.uploader.upload(base64, { folder: 'products' })
-
-        product.imageUrl = result.secure_url;
-        product.imagePublicId = result.public_id;
+    if (retainedUrls.length === 0 && files.length === 0) {
+        return res.status(400).json({ message: "Keep at least one product image or add a new image." });
     }
+
+    const uploadedImages = await uploadProductImages(files);
+    const finalImages = [...retainedUrls, ...uploadedImages.map((image) => image.url)];
+    const finalPublicIds = [...retainedPublicIds, ...uploadedImages.map((image) => image.publicId)];
+    const removedIds = removedPublicIds.filter((publicId) => !finalPublicIds.includes(publicId));
+    await Promise.all(removedIds.map((publicId) => cloudinary.uploader.destroy(publicId).catch(() => null)));
+
+    product.imageUrl = finalImages[0];
+    product.imagePublicId = finalPublicIds[0];
+    product.imageUrls = finalImages;
+    product.imagePublicIds = finalPublicIds;
 
     await product.save()
 
@@ -1350,4 +1406,159 @@ export async function ordersChart(req, res) {
         res.json(error.message)
     }
 
+}
+
+export async function getProductComments(req, res) {
+    const product = await productModel.findOne({ slug: req.params.slug }).select("_id").lean();
+    if (!product) return res.status(404).json({ message: "Product not found." });
+    const comments = await commentModel.find({ product: product._id })
+        .populate("user", "firstName lastName username")
+        .sort({ createdAt: -1 }).lean();
+    return res.status(200).json(comments);
+}
+
+export async function getProductReviewEligibility(req, res) {
+    const product = await productModel.findOne({ slug: req.params.slug }).select("_id").lean();
+    if (!product) return res.status(404).json({ message: "Product not found." });
+
+    const purchased = await orderModel.exists({
+        user: req.user._id,
+        "items.product": product._id,
+        "payment.status": "paid"
+    });
+
+    return res.status(200).json({ canReview: Boolean(purchased) });
+}
+
+export async function createProductComment(req, res) {
+    const { body, rating } = req.body;
+    if (!body?.trim()) return res.status(400).json({ message: "Comment cannot be empty." });
+    const parsedRating = Number(rating);
+    if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+        return res.status(400).json({ message: "Please select a rating from 1 to 5 stars." });
+    }
+
+    const product = await productModel.findOne({ slug: req.params.slug }).select("_id").lean();
+    if (!product) return res.status(404).json({ message: "Product not found." });
+    const purchased = await orderModel.exists({ user: req.user._id, "items.product": product._id, "payment.status": "paid" });
+    if (!purchased) return res.status(403).json({ message: "Please purchase this item to add a comment." });
+
+    const uploadedImages = await Promise.all((req.files || []).map(async (file) => {
+        const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+        const result = await cloudinary.uploader.upload(base64, { folder: "product-comments" });
+        return { url: result.secure_url, publicId: result.public_id };
+    }));
+
+    const comment = await commentModel.create({
+        product: product._id,
+        user: req.user._id,
+        body: body.trim(),
+        rating: parsedRating,
+        imageUrls: uploadedImages.map((image) => image.url),
+        imagePublicIds: uploadedImages.map((image) => image.publicId)
+    });
+    return res.status(201).json(await commentModel.findById(comment._id).populate("user", "firstName lastName username").lean());
+}
+
+export async function updateProfile(req, res) {
+    const { firstName, lastName, username } = req.body;
+    if (!firstName?.trim() || !lastName?.trim() || !username?.trim()) {
+        return res.status(400).json({ message: "First name, last name and username are required." });
+    }
+    const normalizedUsername = username.trim().toLowerCase();
+    const duplicate = await userModel.findOne({ username: normalizedUsername, _id: { $ne: req.user._id } }).select("_id").lean();
+    if (duplicate) return res.status(409).json({ message: "Username is already in use." });
+    const user = await userModel.findByIdAndUpdate(req.user._id, {
+        firstName: firstName.trim(), lastName: lastName.trim(), username: normalizedUsername
+    }, { new: true, runValidators: true }).select("firstName lastName username email is_admin createdAt").lean();
+    return res.status(200).json({ user });
+}
+
+export async function changePassword(req, res) {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    if (!currentPassword || !newPassword || newPassword !== confirmPassword) {
+        return res.status(400).json({ message: "Current password and matching new passwords are required." });
+    }
+    if (!passwordRegex.test(newPassword)) {
+        return res.status(400).json({ message: "New password must be at least 8 characters and include uppercase, lowercase, number and special character." });
+    }
+    const user = await userModel.findById(req.user._id);
+    const currentHash = crypto.createHash("sha256").update(currentPassword).digest("hex");
+    if (user.password !== currentHash) return res.status(401).json({ message: "Current password is incorrect." });
+    user.password = crypto.createHash("sha256").update(newPassword).digest("hex");
+    await user.save();
+    await sessionModel.updateMany({ user: user._id }, { isRevoked: true });
+    return res.status(200).json({ message: "Password changed successfully. Please log in again." });
+}
+
+function parseCsv(text) {
+    const rows = [];
+    const firstLine = text.split(/\r?\n/, 1)[0] || "";
+    const delimiter = firstLine.includes("\t") && !firstLine.includes(",") ? "\t" : ",";
+    let row = [], value = "", quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+        const char = text[index];
+        if (char === '"' && text[index + 1] === '"') { value += '"'; index += 1; continue; }
+        if (char === '"') { quoted = !quoted; continue; }
+        if (char === delimiter && !quoted) { row.push(value.trim()); value = ""; continue; }
+        if ((char === "\n" || char === "\r") && !quoted) {
+            if (char === "\r" && text[index + 1] === "\n") index += 1;
+            row.push(value.trim()); value = "";
+            if (row.some(Boolean)) rows.push(row);
+            row = [];
+            continue;
+        }
+        value += char;
+    }
+    if (value || row.length) { row.push(value.trim()); rows.push(row); }
+    return rows;
+}
+
+export async function importProducts(req, res) {
+    if (!req.file || !req.file.originalname.toLowerCase().endsWith(".csv")) {
+        return res.status(400).json({ message: "Please upload a CSV file." });
+    }
+    const rows = parseCsv(req.file.buffer.toString("utf8"));
+    if (rows.length < 2) return res.status(400).json({ message: "The CSV must include a header and at least one product row." });
+    const headers = rows[0].map((header) => header.replace(/^\uFEFF/, "").trim().toLowerCase());
+    const requiredHeaders = ["name", "price", "stock", "category"];
+    const missing = requiredHeaders.filter((header) => !headers.includes(header));
+    if (missing.length) return res.status(400).json({ message: `Missing CSV columns: ${missing.join(", ")}.` });
+
+    const existingNames = new Set((await productModel.find({ name: { $in: rows.slice(1).map((row) => row[headers.indexOf("name")]) } }).select("name").lean()).map((item) => item.name.toLowerCase()));
+    const validProducts = [], errors = [], seenNames = new Set();
+    for (let index = 1; index < rows.length; index += 1) {
+        const row = Object.fromEntries(headers.map((header, column) => [header, rows[index][column] || ""]));
+        const rowNumber = index + 1;
+        const name = row.name.trim();
+        const price = Number(row.price);
+        const stock = Number(row.stock);
+        const categoryValue = row.category.trim();
+        const categorySlug = slugify(categoryValue, { lower: true, strict: true, trim: true });
+        const category = await categoryModel.findOne({
+            $or: [
+                { slug: categorySlug },
+                { name: { $regex: `^${categoryValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
+                ...(/^[a-f\d]{24}$/i.test(categoryValue) ? [{ _id: categoryValue }] : [])
+            ]
+        }).select("_id").lean();
+        const rowErrors = [];
+        if (!name) rowErrors.push("name is required");
+        if (existingNames.has(name.toLowerCase()) || seenNames.has(name.toLowerCase())) rowErrors.push("product name already exists");
+        if (!Number.isFinite(price) || price < 0) rowErrors.push("price must be a non-negative number");
+        if (!Number.isInteger(stock) || stock < 0) rowErrors.push("stock must be a non-negative integer");
+        if (!category) rowErrors.push("category was not found; use its slug, name, or ID");
+        if (rowErrors.length) { errors.push({ row: rowNumber, errors: rowErrors }); continue; }
+        const imageUrl = row.imageurl || "https://placehold.co/800x800?text=Product";
+        validProducts.push({ name, slug: slugify(name, { lower: true, strict: true, trim: true }), imageUrl, imagePublicId: "csv-import", imageUrls: [imageUrl], price, stock, author: req.user._id, category: category._id });
+        seenNames.add(name.toLowerCase());
+    }
+    if (validProducts.length) {
+        await productModel.insertMany(validProducts, { ordered: false });
+        await sendToTopic("all_users", {
+            title: "New products added",
+            body: `${validProducts.length} new ${validProducts.length === 1 ? "product has" : "products have"} been added to the store.`,
+        }, undefined, { type: "product", link: "/products" });
+    }
+    return res.status(201).json({ imported: validProducts.length, failed: errors.length, errors });
 }

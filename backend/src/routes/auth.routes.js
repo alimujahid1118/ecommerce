@@ -1,6 +1,7 @@
 import express from "express";
 import * as authController from "../controllers/auth.controllers.js";
 import { upload } from "../config/config.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 
 const authRouter = express.Router();
 
@@ -25,11 +26,15 @@ authRouter.get('/auth/get-me', authController.getMe)
 
 // GET /api/auth/get-users
 
-authRouter.get('/auth/get-users', authController.getUsers)
+authRouter.get('/auth/get-users', requireAuth, requireAdmin, authController.getUsers)
 
 // DELETE /api/auth/delete-user/:userId
 
-authRouter.delete('/auth/delete-user/:userId', authController.deleteUser)
+authRouter.delete('/auth/delete-user/:userId', requireAuth, requireAdmin, authController.deleteUser)
+
+authRouter.put('/auth/profile', requireAuth, authController.updateProfile)
+
+authRouter.put('/auth/password', requireAuth, authController.changePassword)
 
 // POST /api/auth/verify-email
 
@@ -37,7 +42,7 @@ authRouter.post('/auth/verify-email', authController.verifyEmail)
 
 // POST /api/auth/create-category
 
-authRouter.post('/auth/create-category', upload.single("image"), authController.createCategory)
+authRouter.post('/auth/create-category', requireAuth, requireAdmin, upload.single("image"), authController.createCategory)
 
 // GET /api/auth/get-category
 
@@ -49,15 +54,17 @@ authRouter.get('/auth/get-category/:slug', authController.getCategoryBySlug)
 
 // PUT /api/auth/update-category/slug
 
-authRouter.put('/auth/update-category/:slug', upload.single("image"), authController.updateCategory)
+authRouter.put('/auth/update-category/:slug', requireAuth, requireAdmin, upload.single("image"), authController.updateCategory)
 
 // DELETE /api/auth/delete-category/slug
 
-authRouter.delete('/auth/delete-category/:slug', authController.deleteCategory)
+authRouter.delete('/auth/delete-category/:slug', requireAuth, requireAdmin, authController.deleteCategory)
 
 // POST /api/auth/create-product
 
-authRouter.post('/auth/create-product', upload.single("image"), authController.createProduct)
+authRouter.post('/auth/create-product', requireAuth, requireAdmin, upload.array("image", 10), authController.createProduct)
+
+authRouter.post('/auth/import-products', requireAuth, requireAdmin, upload.single("file"), authController.importProducts)
 
 // GET /api/auth/get-products
 
@@ -65,7 +72,7 @@ authRouter.get('/auth/get-products', authController.getProducts)
 
 // DELETE /api/auth/delete-product/slug
 
-authRouter.delete('/auth/delete-product/:slug', authController.deleteProduct)
+authRouter.delete('/auth/delete-product/:slug', requireAuth, requireAdmin, authController.deleteProduct)
 
 // GET /api/auth/get-product/slug
 
@@ -73,7 +80,13 @@ authRouter.get('/auth/get-product/:slug', authController.getProductBySlug)
 
 // PUT /api/auth/update-product/slug
 
-authRouter.put('/auth/update-product/:slug', upload.single("image"), authController.updateProductBySlug)
+authRouter.put('/auth/update-product/:slug', requireAuth, requireAdmin, upload.array("image", 10), authController.updateProductBySlug)
+
+authRouter.get('/auth/get-product/:slug/comments', authController.getProductComments)
+
+authRouter.get('/auth/get-product/:slug/review-eligibility', requireAuth, authController.getProductReviewEligibility)
+
+authRouter.post('/auth/get-product/:slug/comments', requireAuth, upload.array("images", 4), authController.createProductComment)
 
 // POST /api/cart-sync
 
@@ -109,6 +122,6 @@ authRouter.get('/get-orders', authController.getOrders)
 
 // POST /api/orders-chart
 
-authRouter.post('/orders-chart', authController.ordersChart)
+authRouter.post('/orders-chart', requireAuth, requireAdmin, authController.ordersChart)
 
 export default authRouter;

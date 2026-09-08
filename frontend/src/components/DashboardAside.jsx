@@ -2,20 +2,25 @@ import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
 import { removeCurrentToken } from "../firebase/tokenSync";
+import ConfirmationModal from "./ConfirmationModal";
+import { useState } from "react";
 
 export default function DashboardAside() {
 
     const {setIsAuthenticated, userData } = useAppContext();
     const navigate = useNavigate();
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
     const handleLogout = async () => {
+        setLoggingOut(true);
         try {
             await removeCurrentToken();
-            const response = await api.post("/auth/logout");
+            await api.post("/auth/logout");
             setIsAuthenticated(false)
             navigate("/");
         } catch (error) {
             console.log(error)
-        }
+        } finally { setLoggingOut(false); setConfirmOpen(false); }
     }
 
     return (
@@ -32,17 +37,13 @@ export default function DashboardAside() {
                 Products
             </Link>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
-            <div className="px-6">
-                Edit Profile
-            </div>
+            <Link to='/dashboard/settings' className="px-6">Edit Profile</Link>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <Link to={`/dashboard/orders`} className="px-6">
                 My Orders
             </Link>
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
-            <div className="px-6">
-                Change Password
-            </div>
+            <Link to='/dashboard/settings' className="px-6">Change Password</Link>
             {
                 userData.is_admin && (
                     <>
@@ -64,8 +65,9 @@ export default function DashboardAside() {
             <p className="w-full bg-slate-200 py-[0.5px]"></p>
             <div className="flex flex-row gap-2 px-2 py-2 mb-2 mx-2 justify-center bg-[#132A36] text-white font-semibold rounded-md">
                 <i className="fi fi-rr-power mt-[3px]"></i>
-                <button type="button" aria-label="Log out" onClick={handleLogout}> LOG OUT</button>
+                <button type="button" aria-label="Log out" onClick={() => setConfirmOpen(true)}> LOG OUT</button>
             </div>
+            <ConfirmationModal open={confirmOpen} title="Confirm logout" message="Are you sure you want to log out?" confirmLabel="Logout" loading={loggingOut} onCancel={() => setConfirmOpen(false)} onConfirm={handleLogout} />
         </aside>
     )
 }

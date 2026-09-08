@@ -19,6 +19,14 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: [true, "imagePublicId is a required field."]
     },
+    'imagePublicIds': {
+        type: [String],
+        default: []
+    },
+    'imageUrls': {
+        type: [String],
+        default: []
+    },
     'price': {
         type: Number,
         required: [true, "Price is a required field."]

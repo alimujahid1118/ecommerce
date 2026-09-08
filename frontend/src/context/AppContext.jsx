@@ -6,6 +6,7 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
 
     const [menuOpen, setMenuOpen] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
     const [category, setCategory] = useState([])
     const [ordersLoading, setOrdersLoading] = useState(true);
 
@@ -14,10 +15,12 @@ export function AppProvider({ children }) {
 
     const [totalPages, setTotalPages] = useState(null)
 
-    const [orders, setOrders] = useState(null)
+    const [orders, setOrders] = useState([])
 
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [toasts, setToasts] = useState([]);
+    const [cartCount, setCartCount] = useState(0);
 
     const [userData, setUserData] = useState({
         firstName: "",
@@ -40,6 +43,7 @@ export function AppProvider({ children }) {
                 setUserData(response.data.user);
                 setIsAuthenticated(true);
             } catch {
+                setIsAuthenticated(false);
                 setUserData({
                     firstName: "",
                     lastName: "",
@@ -111,6 +115,25 @@ export function AppProvider({ children }) {
         getNotifications();
     }, [isAuthenticated]);
 
+    useEffect(() => {
+        const loadCartCount = async () => {
+            if (isAuthenticated) {
+                try {
+                    const response = await api.get("/get-cart");
+                    setCartCount((response.data || []).reduce((total, item) => total + (item.quantity || 0), 0));
+                } catch {
+                    setCartCount(0);
+                }
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            setCartCount(cart.reduce((total, item) => total + (item.quantity || 0), 0));
+        };
+
+        loadCartCount();
+    }, [isAuthenticated]);
+
     const markNotificationRead = useCallback(async (id) => {
         setNotifications((prev) => {
             const target = prev.find((notification) => notification._id === id);
@@ -140,11 +163,38 @@ export function AppProvider({ children }) {
         }
     }, []);
 
+    const showToast = useCallback((message, type = "success") => {
+        const id = crypto.randomUUID();
+        setToasts((prev) => [...prev, { id, title: type === "error" ? "Something went wrong" : "Success", body: message, type }]);
+        window.setTimeout(() => setToasts((prev) => prev.filter((toast) => toast.id !== id)), 5000);
+    }, []);
+
+    const refreshCartCount = useCallback(async () => {
+        try {
+            if (isAuthenticated) {
+                const response = await api.get("/get-cart");
+                setCartCount((response.data || []).reduce((total, item) => total + (item.quantity || 0), 0));
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+            setCartCount(cart.reduce((total, item) => total + (item.quantity || 0), 0));
+        } catch {
+            // Keep the last known badge value when the refresh request fails.
+        }
+    }, [isAuthenticated]);
+
+    const dismissToast = useCallback((id) => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, []);
+
     return (
         <AppContext.Provider
             value={{
                 menuOpen,
                 setMenuOpen,
+                profileOpen,
+                setProfileOpen,
 
                 isAuthenticated,
                 setIsAuthenticated,
@@ -172,7 +222,12 @@ export function AppProvider({ children }) {
                 unreadCount,
                 refreshNotifications,
                 markNotificationRead,
-                markAllNotificationsRead
+                markAllNotificationsRead,
+                toasts,
+                showToast,
+                dismissToast,
+                cartCount,
+                refreshCartCount
             }}
         >
             {children}

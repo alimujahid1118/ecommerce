@@ -17,7 +17,6 @@ const NotificationPermissionPopup = lazy(() => import("./components/Notification
 import NotificationToast from "./components/NotificationToast";
 import { useAppContext } from "./context/AppContext";
 const ChatWidget = lazy(() => import("./chat/ChatWidget"));
-const Cursor = lazy(() => import("./components/Cursor"));
 import SEO from "./components/SEO";
 import NotFound from "./pages/NotFound";
 const UpdateCategory = lazy(() => import("./pages/UpdateCategory"))
@@ -28,12 +27,12 @@ const UpdateProduct = lazy(() => import("./pages/UpdateProduct"))
 const ProductDetails = lazy(() => import("./pages/ProductDetails"))
 const Cart = lazy(() => import("./pages/Cart"))
 const Promotions = lazy(() => import("./pages/Promotions"))
+const AccountSettings = lazy(() => import("./pages/AccountSettings"))
 
 function App() {
     const [toasts, setToasts] = useState([]);
     const [idleEnhancementsReady, setIdleEnhancementsReady] = useState(false);
-    const [desktopCursorReady, setDesktopCursorReady] = useState(false);
-    const { refreshNotifications } = useAppContext();
+    const { refreshNotifications, toasts: contextToasts, dismissToast: dismissContextToast } = useAppContext();
     const location = useLocation();
 
     const privateRoute = location.pathname.startsWith("/dashboard") ||
@@ -67,7 +66,8 @@ function App() {
 
     const dismissToast = useCallback((id) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, []);
+        dismissContextToast(id);
+    }, [dismissContextToast]);
 
     useEffect(() => {
         let idleHandle;
@@ -75,7 +75,6 @@ function App() {
 
         const enableIdleEnhancements = () => {
             setIdleEnhancementsReady(true);
-            setDesktopCursorReady(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
         };
 
         if ("requestIdleCallback" in window) {
@@ -132,11 +131,6 @@ function App() {
 
     return (
         <>
-        {desktopCursorReady && (
-            <Suspense fallback={null}>
-                <Cursor />
-            </Suspense>
-        )}
         <SEO {...pageMeta} />
         <div className="min-h-screen flex flex-col">
             <Header />
@@ -146,7 +140,7 @@ function App() {
                     <NotificationPermissionPopup />
                 </Suspense>
             )}
-            <NotificationToast toasts={toasts} onDismiss={dismissToast} />
+            <NotificationToast toasts={[...toasts, ...contextToasts]} onDismiss={dismissToast} />
 
             <main className="flex-1">
                 <Suspense>
@@ -168,6 +162,7 @@ function App() {
                         <Route path="/dashboard/users" element={<ManageUsers />} />
                         <Route path="/dashboard/promotions" element={<Promotions />} />
                         <Route path="/dashboard/chat" element={<AdminChat />} />
+                        <Route path="/dashboard/settings" element={<AccountSettings />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </Suspense>

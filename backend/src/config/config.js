@@ -85,4 +85,22 @@ export default cloudinary;
 
 const storage = multer.memoryStorage();
 
-export const upload = multer({ storage: storage })
+export const upload = multer({
+    storage,
+    limits: { files: 10, fileSize: 10 * 1024 * 1024 },
+    fileFilter: (_req, file, callback) => {
+        if (file.fieldname === "file" && (
+            ["text/csv", "application/csv", "application/vnd.ms-excel"].includes(file.mimetype) ||
+            file.originalname.toLowerCase().endsWith(".csv")
+        )) {
+            return callback(null, true);
+        }
+        if (file.fieldname === "file") {
+            return callback(new Error("Please upload a CSV file."));
+        }
+        if (!file.mimetype.startsWith("image/")) {
+            return callback(new Error("Only image files are allowed."));
+        }
+        callback(null, true);
+    }
+});

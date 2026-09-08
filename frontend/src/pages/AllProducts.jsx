@@ -4,9 +4,11 @@ import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "../api/axios";
 
+const productImageList = (product) => product?.imageUrls?.length ? product.imageUrls : (product?.imageUrl ? [product.imageUrl] : []);
+
 export default function AllProducts() {
 
-    const { category, totalPages, setTotalPages, isAuthenticated } = useAppContext();
+    const { category, totalPages, setTotalPages, isAuthenticated, showToast, refreshCartCount } = useAppContext();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchParams] = useSearchParams();
 
@@ -22,6 +24,7 @@ export default function AllProducts() {
     
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [addingId, setAddingId] = useState(null);
 
     useEffect(() => {
         setFilter({
@@ -102,18 +105,20 @@ export default function AllProducts() {
     nextParams.set("page", Math.min(paramsPage + 1, totalPages));
 
     const handleSubmit = async (product) => {
+        if (product.stock < 1) return showToast("This product is out of stock.", "error");
+        setAddingId(product._id);
 
-        if (isAuthenticated) {
+        try {
+            if (isAuthenticated) {
             const item = {
                 productId: product._id,
                 quantity: 1
             }
-            try {
                 const response = await api.post("/create-cart", item);
-            } catch (error) {
-                console.log(error)
+                showToast(`${response.data?.quantity > 1 ? "Product quantity updated in cart" : "Product added to cart"}: ${product.name}`);
+                await refreshCartCount();
+                return;
             }
-        }
 
         const item = {
             productId: product._id,
@@ -124,12 +129,6 @@ export default function AllProducts() {
             quantity: 1,
         };
 
-        const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-        const existingItem = cart.find(
-            (product) => product.productId === item.productId
-        );
-
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
@@ -137,6 +136,11 @@ export default function AllProducts() {
         }
 
         localStorage.setItem("cart", JSON.stringify(cart));
+            showToast(`${existingItem ? "Product quantity updated in cart" : "Product added to cart"}: ${product.name}`);
+            await refreshCartCount();
+        } catch (error) {
+            showToast(error.response?.data?.message || "Unable to add product to cart.", "error");
+        } finally { setAddingId(null); }
     };
 
     return (
@@ -146,11 +150,8 @@ export default function AllProducts() {
             {/* Desktop */}
                 {/* Filters */}
                 <aside className="hidden md:block md:w-72 shrink-0 px-4 py-6">
-                    <div className="sticky top-24 flex flex-col gap-8 border rounded-lg shadow-lg p-5 bg-white">
-
-                        <h2 className="text-xl font-bold text-[#132A36]">
-                            Filters
-                        </h2>
+                    <div className="sticky top-24 flex flex-col gap-7 rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-5"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#104185]">Refine results</p><h2 className="mt-1 text-2xl font-black text-[#132A36]">Filters</h2></div><span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">{[filter.category, filter.sort].filter(Boolean).length} active</span></div>
 
                         {/* Category */}
                         <div className="flex flex-col gap-3">
@@ -166,10 +167,10 @@ export default function AllProducts() {
                                         category: e.target.value,
                                     })
                                 }
-                                className="px-4 py-2 border border-slate-300 rounded-lg text-[#104185]"
+                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#104185] outline-none transition focus:border-[#104185] focus:ring-2 focus:ring-[#104185]/15"
                             >
                                 <option value="" disabled>
-                                    Select Category..
+                                    All categories
                                 </option>
 
                                 {category?.map((eachCategory) => (
@@ -196,7 +197,7 @@ export default function AllProducts() {
                                         sort: "asc",
                                     }))
                                 }
-                                className={`flex items-center justify-center gap-2 border rounded-lg py-2 ${
+                                className={`flex items-center justify-center gap-2 rounded-xl border py-3 transition focus:outline-none focus:ring-2 focus:ring-[#104185]/20 ${
                                     filter.sort === "asc"
                                         ? "bg-[#132A36] text-white"
                                         : "bg-white border-slate-300 text-[#132A36]"
@@ -204,7 +205,7 @@ export default function AllProducts() {
                             >
                                 <i className="fi fi-rr-sort-amount-down mt-[2px]"></i>
                                 <span className="font-semibold">
-                                    Asc to desc
+                                    Price: low to high
                                 </span>
                             </button>
 
@@ -215,7 +216,7 @@ export default function AllProducts() {
                                         sort: "desc",
                                     }))
                                 }
-                                className={`flex items-center justify-center gap-2 border rounded-lg py-2 ${
+                                className={`flex items-center justify-center gap-2 rounded-xl border py-3 transition focus:outline-none focus:ring-2 focus:ring-[#104185]/20 ${
                                     filter.sort === "desc"
                                         ? "bg-[#132A36] text-white"
                                         : "bg-white border-slate-300 text-[#132A36]"
@@ -223,7 +224,7 @@ export default function AllProducts() {
                             >
                                 <i className="fi fi-rr-sort-amount-up mt-[2px]"></i>
                                 <span className="font-semibold">
-                                    Desc to asc
+                                    Price: high to low
                                 </span>
                             </button>
                         </div>
@@ -232,7 +233,7 @@ export default function AllProducts() {
                         <div className="flex flex-col gap-3">
                             <Link
                                 to={filterUrl}
-                                className="text-center bg-[#132A36] text-white py-2 rounded-lg font-semibold"
+                                className="text-center rounded-xl bg-[#132A36] py-3 font-semibold text-white transition hover:bg-[#104185]"
                             >
                                 Apply Filter
                             </Link>
@@ -245,7 +246,7 @@ export default function AllProducts() {
                                         sort: "",
                                     })
                                 }
-                                className="text-center border border-[#132A36] text-[#132A36] py-2 rounded-lg font-semibold"
+                                className="text-center rounded-xl border border-[#132A36] py-3 font-semibold text-[#132A36] transition hover:bg-white"
                             >
                                 Reset Filter
                             </Link>
@@ -263,19 +264,13 @@ export default function AllProducts() {
             {/* Filters */}
             {
                 menuOpen && (
-                    <div className="fixed top-0 z-50 w-full h-full bg-white">
-                        <div>
-                            <button
-                                type="button"
-                                aria-label="Close product filters"
-                                onClick={() => setMenuOpen(false)}
-                                className="fi fi-rr-cross-small text-4xl fixed top-0 right-0 md:left-60 px-4 py-4 text-[#132A36] hover:cursor-pointer"
-                            ></button>
-                        </div>
-                        <div className="flex flex-col gap-12 py-24 px-4">
+                    <div className="fixed inset-0 z-50 bg-[#132A36]/60 p-3 backdrop-blur-[2px]">
+                        <div className="ml-auto flex h-full w-full max-w-sm flex-col gap-7 overflow-y-auto rounded-2xl bg-slate-50 p-5 shadow-2xl">
+                            <div className="flex items-center justify-between border-b border-slate-200 pb-5"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#104185]">Refine results</p><h2 className="mt-1 text-2xl font-black text-[#132A36]">Filters</h2></div><button type="button" aria-label="Close product filters" onClick={() => setMenuOpen(false)} className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-2xl text-[#132A36] transition hover:border-[#104185]">×</button></div>
+                        <div className="flex flex-col gap-12">
                             <div className="flex flex-col gap-4">
                                 <p className="text-[#132A36] font-semibold">By Category</p>
-                                <select name="category" value={filter.category} onChange={(e) => setFilter({...filter, category: e.target.value})} className="px-4 w-full border-[1px] border-slate-300 py-2 rounded-lg text-[#104185]">
+                                <select name="category" value={filter.category} onChange={(e) => setFilter({...filter, category: e.target.value})} className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-[#104185] outline-none focus:border-[#104185] focus:ring-2 focus:ring-[#104185]/15">
                                     <option value="" disabled>Select Category..</option>
                                     {
                                         category?.map((eachCategory) => (
@@ -286,19 +281,18 @@ export default function AllProducts() {
                             </div>
                             <div>
                                 <div className="flex flex-col gap-2">
-                                    <p className="text-[#132A36] font-semibold">By Price:</p>
-                                    <button onClick={() => setFilter(prev => ({ ...prev, sort: "asc" }))} className={`flex flex-row gap-2 justify-center border-[1px] py-2 rounded-lg ${ filter.sort === "asc" ? "text-white bg-[#132A36]" : "bg-white border-slate-300 text-[#132A36]"}`}>
+                                    <p className="text-[#132A36] font-semibold">By Price</p>
+                                    <button onClick={() => setFilter(prev => ({ ...prev, sort: "asc" }))} className={`flex flex-row gap-2 justify-center rounded-xl border py-3 transition ${ filter.sort === "asc" ? "text-white bg-[#132A36]" : "bg-white border-slate-300 text-[#132A36]"}`}>
                                         <i className="fi fi-rr-sort-amount-down mt-[2px]"></i>
-                                        <p className="font-semibold">Asc to desc</p>
+                                        <p className="font-semibold">Price: low to high</p>
                                     </button>
-                                    <button onClick={() => setFilter(prev => ({ ...prev, sort: "desc" }))} className={`flex flex-row gap-2 justify-center border-[1px] py-2 rounded-lg ${ filter.sort === "desc" ? "text-white bg-[#132A36]" : "bg-white border-slate-300 text-[#132A36]"}`}>
+                                    <button onClick={() => setFilter(prev => ({ ...prev, sort: "desc" }))} className={`flex flex-row gap-2 justify-center rounded-xl border py-3 transition ${ filter.sort === "desc" ? "text-white bg-[#132A36]" : "bg-white border-slate-300 text-[#132A36]"}`}>
                                         <i className="fi fi-rr-sort-amount-up mt-[2px]"></i>
-                                        <p className="font-semibold">Desc to asc</p>
+                                        <p className="font-semibold">Price: high to low</p>
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex flex-row gap-4 justify-center">
-                                <Link to={filterUrl} onClick={() => setMenuOpen(false)} className="font-semibold text-[#132A36] underline">Apply filter</Link>
+                            <div className="mt-auto flex flex-col gap-3"><Link to={filterUrl} onClick={() => setMenuOpen(false)} className="rounded-xl bg-[#132A36] py-3 text-center font-semibold text-white">Apply filters</Link>
                                 <Link
                                     to="/products"
                                     onClick={() => {
@@ -308,12 +302,12 @@ export default function AllProducts() {
                                         });
                                         setMenuOpen(false);
                                     }}
-                                    className="font-semibold text-[#132A36] underline"
+                                    className="rounded-xl border border-[#132A36] py-3 text-center font-semibold text-[#132A36]"
                                 >
                                     Reset Filter
                                 </Link>
                             </div>
-                        </div>
+                        </div></div>
                     </div>
                 )
             }
@@ -353,63 +347,13 @@ export default function AllProducts() {
                     </div>
                 ) : (
             <div className="flex-1 w-full">
-                <div className="flex justify-center items-center gap-4 py-6 md:pt-10 md:pb-6">
-                    {paramsPage === 1 ? (
-                        <span className="px-3 py-1 rounded-lg bg-gray-300 cursor-not-allowed">
-                            Previous
-                        </span>
-                    ) : (
-                        <Link
-                            to={`/products?${prevParams.toString()}`}
-                            className="px-3 py-1 rounded-lg bg-[#132A36] text-white"
-                        >
-                            Previous
-                        </Link>
-                    )}
-
-                <div className="flex items-center gap-2">
-                    {pageNumbers.map((page) => {
-                        const params = new URLSearchParams(searchParams);
-                        params.set("page", page);
-                        return(
-                        <Link
-                            to={`/products?${params.toString()}`}
-                            key={page}
-                            className={`flex w-8 h-8 items-center justify-center rounded-lg ${
-                                paramsPage === page
-                                    ? "bg-[#132A36] text-white"
-                                    : "border border-[#132A36] text-[#132A36]"
-                            }`}
-                        >
-                            {page}
-                        </Link>)
-                })}
-                </div>
-
-                {paramsPage === totalPages ? (
-                    <span className="px-4 py-1 rounded-lg bg-gray-300 cursor-not-allowed">
-                        Next
-                    </span>
-                ) : (
-                    <Link
-                        to={`/products?${nextParams.toString()}`}
-                        className="px-4 py-1 rounded-lg bg-[#132A36] text-white"
-                    >
-                        Next
-                    </Link>
-                )}
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:py-8 px-2">
                 {products?.map((product) => (
                     <div
                         key={product._id}
                         className="flex flex-col gap-2 items-center p-4 border shadow-lg rounded-lg h-full"
                     >
-                        <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-60 h-48 object-cover rounded-lg"
-                        />
+                        <img src={productImageList(product)[0]} alt={product.name} className="h-48 w-60 rounded-lg object-cover" />
 
                         <p
                             className="mt-3 text-[#132A36] font-bold text-center w-full"
@@ -427,13 +371,18 @@ export default function AllProducts() {
                                 <Link to={`/product/${product.slug}`} className="flex w-full text-[#132A36] py-2 justify-center rounded-lg bg-white border-[1px] border-[#132A36]">
                                     View details
                                 </Link>
-                                <button onClick={() => handleSubmit(product)} className="w-full bg-[#132A36] border-[1px] py-2 rounded-lg text-white">
-                                    Add to Cart
+                                <button disabled={addingId === product._id} onClick={() => handleSubmit(product)} className="w-full bg-[#132A36] border-[1px] py-2 rounded-lg text-white disabled:opacity-60">
+                                    {addingId === product._id ? "Adding..." : "Add to Cart"}
                                 </button>
                             </div>
                         </div>
                     </div>
                 ))}
+            </div>
+            <div className="flex flex-wrap justify-center items-center gap-4 py-8">
+                {paramsPage === 1 ? <span className="rounded-lg bg-gray-300 px-3 py-1 text-gray-500">Previous</span> : <Link to={`/products?${prevParams.toString()}`} className="rounded-lg bg-[#132A36] px-3 py-1 text-white">Previous</Link>}
+                <div className="flex flex-wrap items-center gap-2">{pageNumbers.map((page) => { const params = new URLSearchParams(searchParams); params.set("page", page); return <Link to={`/products?${params.toString()}`} key={page} className={`flex h-8 w-8 items-center justify-center rounded-lg ${paramsPage === page ? "bg-[#132A36] text-white" : "border border-[#132A36] text-[#132A36]"}`}>{page}</Link>; })}</div>
+                {paramsPage === totalPages ? <span className="rounded-lg bg-gray-300 px-4 py-1 text-gray-500">Next</span> : <Link to={`/products?${nextParams.toString()}`} className="rounded-lg bg-[#132A36] px-4 py-1 text-white">Next</Link>}
             </div>
             </div>
             )}

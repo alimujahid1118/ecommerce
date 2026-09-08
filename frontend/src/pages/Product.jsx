@@ -1,22 +1,41 @@
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import api from "../api/axios";
 import DashboardAside from "../components/DashboardAside";
 import { useAppContext } from "../context/AppContext";
 import { useState } from "react";
 import { useEffect } from "react";
+import ConfirmationModal from "../components/ConfirmationModal";
+
+const MAX_PRODUCT_IMAGES = 10;
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const productImageList = (product) => product?.imageUrls?.length ? product.imageUrls : (product?.imageUrl ? [product.imageUrl] : []);
 
 export default function Product () {
 
-    const { isAuthenticated, setIsAuthenticated, isAuthLoading, category } = useAppContext();
+    const { isAuthenticated, setIsAuthenticated, isAuthLoading, category, showToast } = useAppContext();
     const [getProducts, setGetProducts] = useState([])
     const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [deleteSlug, setDeleteSlug] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [csvFile, setCsvFile] = useState(null);
+    const [importing, setImporting] = useState(false);
+    const [csvInputKey, setCsvInputKey] = useState(0);
+    const [imageInputKey, setImageInputKey] = useState(0);
+    const [imagePreviews, setImagePreviews] = useState([]);
     const [createProduct, setCreateProduct] = useState({
         'name': '',
-        'image': null,
+        'images': [],
         'price': null,
         'stock': null,
         'category': ''
     });
+
+    useEffect(() => {
+        const previews = createProduct.images.map((file) => URL.createObjectURL(file));
+        setImagePreviews(previews);
+        return () => previews.forEach((preview) => URL.revokeObjectURL(preview));
+    }, [createProduct.images]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -37,20 +56,51 @@ export default function Product () {
 
     const handleChange = (e) => {
         const { name, files, type ,value } = e.target;
+        if (type === 'file') {
+            const validFiles = Array.from(files || []).filter((file) => {
+                if (!file.type.startsWith("image/")) {
+                    showToast(`${file.name} is not a supported image file.`, "error");
+                    return false;
+                }
+                if (file.size > MAX_IMAGE_SIZE) {
+                    showToast(`${file.name} is larger than 10 MB.`, "error");
+                    return false;
+                }
+                return true;
+            });
+            setCreateProduct((prev) => {
+                const existing = new Set(prev.images.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+                const additions = validFiles.filter((file) => !existing.has(`${file.name}-${file.size}-${file.lastModified}`));
+                if (prev.images.length + additions.length > MAX_PRODUCT_IMAGES) {
+                    showToast(`You can select up to ${MAX_PRODUCT_IMAGES} images.`, "error");
+                }
+                return { ...prev, images: [...prev.images, ...additions].slice(0, MAX_PRODUCT_IMAGES) };
+            });
+            e.target.value = "";
+            return;
+        }
         setCreateProduct(
             (prev) => (
-                {...prev, [name] : type === 'file' ? files[0] : value }
+                {...prev, [name] : value }
             )
         )
     }
 
+    const removeImage = (index) => {
+        setCreateProduct((prev) => ({ ...prev, images: prev.images.filter((_, imageIndex) => imageIndex !== index) }));
+    };
+
     const handleSubmit = async(e) => {
         e.preventDefault();
+        if (!createProduct.name.trim() || createProduct.price === "" || createProduct.stock === "" || !createProduct.category || createProduct.images.length === 0) {
+            return showToast("Name, image, price, stock and category are required.", "error");
+        }
 
+        setSubmitting(true);
         try {
             const data = new FormData();
             data.append("name", createProduct.name);
-            data.append("image", createProduct.image);
+            createProduct.images.forEach((image) => data.append("image", image));
             data.append("price", createProduct.price);
             data.append("stock", createProduct.stock);
             data.append("category", createProduct.category);
@@ -59,28 +109,61 @@ export default function Product () {
             setGetProducts((prev) => [...prev, response.data])
             setCreateProduct({
                 'name': '',
-                'image': '',
+                'images': [],
                 'price': '',
                 'stock': '',
                 'category': ''
             })
-        } catch (error) {
-            console.log(error)
-        }
+            setImageInputKey((key) => key + 1);
+            showToast("Product added successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to add product.", "error"); }
+        finally { setSubmitting(false); }
 
     }
 
-    const handleLogout = async (slug) => {
+    const handleDelete = async () => {
+        setDeleting(true);
         try {
-            await api.delete(`/auth/delete-product/${slug}`)
+            await api.delete(`/auth/delete-product/${deleteSlug}`)
             setGetProducts((prev) => prev.filter(
-                (product) => product.slug !== slug
+                (product) => product.slug !== deleteSlug
             ))
-        } catch (error) {
-            console.log(error)
-        }
+            showToast("Product deleted successfully.");
+        } catch (error) { showToast(error.response?.data?.message || "Unable to delete product.", "error"); }
+        finally { setDeleting(false); setDeleteSlug(null); }
 
     }
+
+    const downloadTemplate = () => {
+        const blob = new Blob(["name,price,stock,category,imageUrl\nExample product,19.99,10,category-slug,https://example.com/image.jpg\n"], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "products-template.csv";
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const importCsv = async () => {
+        if (!csvFile) return showToast("Select a CSV file first.", "error");
+        setImporting(true);
+        try {
+            const data = new FormData();
+            data.append("file", csvFile);
+            const response = await api.post("/auth/import-products", data);
+            const errorSummary = response.data.errors?.length
+                ? ` ${response.data.errors.map((item) => `Row ${item.row}: ${item.errors.join(", ")}`).join("; ")}`
+                : "";
+            showToast(`${response.data.imported} products imported. ${response.data.failed} rows failed.${errorSummary}`, response.data.failed ? "error" : "success");
+            if (response.data.imported > 0 && response.data.failed === 0) {
+                setCsvFile(null);
+                setCsvInputKey((key) => key + 1);
+            }
+            const refreshed = await api.get("/auth/get-products");
+            setGetProducts(refreshed.data.products);
+        } catch (error) { showToast(error.response?.data?.message || "Unable to import products.", "error"); }
+        finally { setImporting(false); }
+    };
 
     if (isAuthLoading) {
         return <div className="flex flex-col min-h-screen font-semibold text-xl text-center justify-center">Loading...</div>;
@@ -98,6 +181,10 @@ export default function Product () {
                     <h1 className="text-2xl font-semibold text-center md:text-start md:pl-4 text-[#132A36]">MANAGE PRODUCTS</h1>
                     <p className="text-sm text-[#104185] px-2 md:px-4">You can create, update and delete categories on this page.</p>
                 </div>
+                <section className="mx-4 mt-6 rounded-xl border border-slate-200 bg-white p-4 md:mx-6">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><h2 className="font-bold text-[#132A36]">Import Products</h2><p className="text-xs text-slate-500">CSV columns: name, price, stock, category, imageUrl</p></div><button type="button" onClick={downloadTemplate} className="text-sm font-semibold text-[#104185] underline">Download CSV Template</button></div>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center"><input key={csvInputKey} type="file" accept=".csv,text/csv" onChange={(event) => setCsvFile(event.target.files?.[0] || null)} className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" /><button type="button" disabled={importing} onClick={importCsv} className="rounded-lg bg-[#132A36] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{importing ? "Importing..." : "Import Products"}</button></div>
+                </section>
                 {/* Mobile */}  
                 {loading
                     ? Array.from({ length: 3 }).map((_, i) => (
@@ -137,10 +224,7 @@ export default function Product () {
 
                                 <div className="flex flex-col gap-2">
                                     <p className="text-xs text-slate-500">Image</p>
-                                    <img
-                                        src={product.imageUrl}
-                                        className="w-60 h-48 object-cover rounded-lg"
-                                    />
+                                    <div className="flex flex-wrap gap-2">{productImageList(product).map((image) => <img key={image} src={image} className="w-20 h-20 object-cover rounded-lg" />)}</div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 pb-2">
                                     <div>
@@ -166,7 +250,7 @@ export default function Product () {
                                         Update
                                     </Link>
 
-                                    <button onClick={() => handleLogout(product.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                    <button onClick={() => setDeleteSlug(product.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                         Delete
                                     </button>
                                 </div>
@@ -234,10 +318,7 @@ export default function Product () {
                                         <td className="py-4 pl-4 whitespace-normal break-words">{product.name.length > 25 ? `${product.name.slice(0, 25)}...` : product.name}</td>
 
                                         <td className="p-4">
-                                            <img
-                                                src={product.imageUrl}
-                                                className="w-20 h-20 object-cover rounded-lg"
-                                            />
+                                            <div className="flex flex-wrap gap-2">{productImageList(product).map((image) => <img key={image} src={image} className="w-16 h-16 object-cover rounded-lg" />)}</div>
                                         </td>
 
                                         <td className="p-4">${product.price}</td>
@@ -252,9 +333,9 @@ export default function Product () {
                                         </td>
 
                                         <td className="text-center">
-                                            <Link onClick={() => handleLogout(product.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
+                                            <button onClick={() => setDeleteSlug(product.slug)} className="bg-[#132A36] border-[1px] text-white px-3 py-2 rounded-lg">
                                                 Delete
-                                            </Link>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -272,8 +353,9 @@ export default function Product () {
                             <input name="name" type="text" value={createProduct.name} onChange={handleChange} placeholder="Product name.." className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <p className="text-md font-semibold text-[#104185]">Image</p>
-                            <input name="image" type="file" accept="image/*" onChange={handleChange} className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
+                            <p className="text-md font-semibold text-[#104185]">Photos ({createProduct.images.length}/{MAX_PRODUCT_IMAGES})</p>
+                            <input key={imageInputKey} name="images" type="file" accept="image/*" multiple onChange={handleChange} className="border-[1px] border-slate-300 px-4 py-2 rounded-lg text-sm"/>
+                            {createProduct.images.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{createProduct.images.map((image, index) => <div key={`${image.name}-${image.lastModified}`} className="relative"><div className="aspect-square overflow-hidden rounded-lg bg-slate-100"><img src={imagePreviews[index]} alt={image.name} className="h-full w-full object-contain" /></div><button type="button" onClick={() => removeImage(index)} aria-label={`Remove ${image.name}`} className="absolute right-1 top-1 rounded-full bg-[#132A36] px-2 py-1 text-xs text-white">×</button><p className="truncate text-xs text-slate-500">{image.name}</p></div>)}</div>}
                         </div>
                         <div>
                             <p className="text-md font-semibold text-[#104185]">Price</p>
@@ -294,9 +376,10 @@ export default function Product () {
                                 }
                             </select>
                         </div>
-                        <button type="submit" className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2">SEND</button>
+                        <button type="submit" disabled={submitting} className="w-full bg-[#132A36] text-white font-semibold rounded-lg py-2 disabled:opacity-60">{submitting ? "Adding..." : "Add Product"}</button>
                     </form>
                 </div>
+                <ConfirmationModal open={Boolean(deleteSlug)} title="Confirm deletion" message="Are you sure you want to delete this product? This action cannot be undone." confirmLabel="Delete" loading={deleting} onCancel={() => setDeleteSlug(null)} onConfirm={handleDelete} />
             </main>
         </div>
     )

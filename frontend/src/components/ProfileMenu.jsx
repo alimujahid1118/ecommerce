@@ -3,19 +3,27 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAppContext } from "../context/AppContext";
 import { removeCurrentToken, syncTokenIfGranted } from "../firebase/tokenSync";
+import ConfirmationModal from "./ConfirmationModal";
 
 export default function ProfileMenu() {
-    const { isAuthenticated, setIsAuthenticated, setUserData } = useAppContext();
-    const [open, setOpen] = useState(false);
+    const { isAuthenticated, setIsAuthenticated, setUserData, profileOpen, setProfileOpen } = useAppContext();
+    const [open, setOpen] = useState(profileOpen);
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [errorMessage, setErrorMessage] = useState(null);
+    const [confirmLogout, setConfirmLogout] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
     const menuRef = useRef(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setOpen(profileOpen);
+    }, [profileOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setOpen(false);
+                setProfileOpen(false);
             }
         };
 
@@ -49,6 +57,7 @@ export default function ProfileMenu() {
             }
 
             setOpen(false);
+            setProfileOpen(false);
             navigate("/dashboard");
         } catch (error) {
             setErrorMessage(error.response?.data?.message || "Something went wrong. Please try again.");
@@ -56,20 +65,22 @@ export default function ProfileMenu() {
     };
 
     const handleLogout = async () => {
+        setLoggingOut(true);
         try {
             await removeCurrentToken();
             await api.post("/auth/logout");
             setIsAuthenticated(false);
             setOpen(false);
+            setProfileOpen(false);
             navigate("/");
         } catch (error) {
             console.log(error);
-        }
+        } finally { setLoggingOut(false); setConfirmLogout(false); }
     };
 
     return (
         <div ref={menuRef}>
-            <button onClick={() => setOpen((prev) => !prev)} aria-label="Account">
+            <button onClick={() => { setOpen((prev) => !prev); setProfileOpen(!open); }} aria-label="Account">
                 <i className="fi fi-rr-user text-2xl text-[#104185] hover:cursor-pointer"></i>
             </button>
 
@@ -89,16 +100,17 @@ export default function ProfileMenu() {
                                     <i className="fi fi-rr-settings"></i>
                                     Dashboard
                                 </Link>
-                                <button
-                                    type="button"
+                                <Link
+                                    to="/dashboard/settings"
+                                    onClick={() => setOpen(false)}
                                     className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[#132A36] hover:bg-slate-50"
                                 >
-                                    <i className="fi fi-rr-settings"></i>
+                                    <i className="fi fi-rr-user-pen"></i>
                                     Profile Settings
-                                </button>
+                                </Link>
                                 <button
                                     type="button"
-                                    onClick={handleLogout}
+                                    onClick={() => setConfirmLogout(true)}
                                     className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[#132A36] hover:bg-slate-50"
                                 >
                                     <i className="fi fi-rr-leave"></i>
@@ -155,6 +167,7 @@ export default function ProfileMenu() {
                     )}
                 </div>
             )}
+            <ConfirmationModal open={confirmLogout} title="Confirm logout" message="Are you sure you want to log out?" confirmLabel="Logout" loading={loggingOut} onCancel={() => setConfirmLogout(false)} onConfirm={handleLogout} />
         </div>
     );
 }
