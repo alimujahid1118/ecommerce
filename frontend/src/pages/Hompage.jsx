@@ -206,17 +206,19 @@ export default function Homepage() {
                     </Link>
                 </div>
 
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     {products?.length === 0
                         ? Array.from({ length: 4 }).map((_, i) => (
                               <div
                                   key={i}
-                                  className="flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm animate-pulse"
+                                  className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-pulse"
                               >
-                                  <div className="h-52 w-full rounded-xl bg-slate-200" />
-                                  <div className="h-4 w-3/4 rounded bg-slate-200" />
-                                  <div className="h-4 w-1/4 rounded bg-slate-200" />
-                                  <div className="mt-auto h-11 rounded-xl bg-slate-200" />
+                                  <div className="aspect-square w-full bg-slate-200" />
+                                  <div className="flex flex-1 flex-col gap-3 p-4">
+                                      <div className="h-4 w-3/4 rounded bg-slate-200" />
+                                      <div className="h-4 w-1/4 rounded bg-slate-200" />
+                                      <div className="mt-auto h-11 rounded-xl bg-slate-200" />
+                                  </div>
                               </div>
                           ))
                         : products?.map((product) => (
@@ -224,7 +226,7 @@ export default function Homepage() {
                                   key={product._id}
                                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-[#104185]/30 hover:shadow-lg"
                               >
-                                  <div className="overflow-hidden bg-slate-100">
+                                  <div className="flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-[#eaf3ff] p-4 sm:p-5">
                                       <img
                                           src={getCloudinaryImageUrl(product.imageUrl, 640)}
                                           srcSet={getCloudinarySrcSet(product.imageUrl, [320, 640])}
@@ -232,32 +234,32 @@ export default function Homepage() {
                                           alt={product.name}
                                           loading="lazy"
                                           decoding="async"
-                                          width="520"
-                                          height="208"
-                                          className="aspect-[5/2] h-auto w-full object-cover transition duration-200 group-hover:scale-[1.03]"
+                                          width="640"
+                                          height="640"
+                                          className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.04]"
                                       />
                                   </div>
 
-                                  <div className="flex flex-1 flex-col p-4">
-                                      <p className="min-h-[48px] text-base font-bold leading-6 text-[#132A36]">
+                                  <div className="flex flex-1 flex-col p-4 sm:p-5">
+                                      <p className="min-h-[48px] text-[15px] font-bold leading-6 text-[#132A36] sm:text-base">
                                           {product.name.length > 30 ? `${product.name.slice(0, 30)}...` : product.name}
                                       </p>
 
-                                      <div className="mt-4 flex items-center justify-between gap-3">
-                                          <p className="text-lg font-bold text-[#104185]">
+                                      <div className="mt-3 flex items-center justify-between gap-2 sm:mt-4 sm:gap-3">
+                                          <p className="text-base font-bold text-[#104185] sm:text-lg">
                                               {Number(product.price || 0).toLocaleString("en-US", {
                                                   style: "currency",
                                                   currency: "USD",
                                               })}
                                           </p>
-                                          <span className="rounded-full bg-[#edf4ff] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#104185]">
+                                          <span className="shrink-0 rounded-full bg-[#edf4ff] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#104185] sm:px-2.5 sm:text-[10px] sm:tracking-[0.1em]">
                                               In stock
                                           </span>
                                       </div>
 
                                       <Link
                                           to={`/product/${product.slug}`}
-                                          className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-[#132A36] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0f2330]"
+                                          className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#132A36] px-3 py-3 text-sm font-semibold text-white transition hover:bg-[#0f2330] sm:mt-5 sm:px-4"
                                       >
                                           View details
                                       </Link>
